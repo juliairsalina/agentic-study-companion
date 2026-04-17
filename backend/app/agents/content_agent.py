@@ -1,17 +1,15 @@
 from __future__ import annotations
 
 import json
-from typing import Any
-
 from agent_framework.foundry import FoundryChatClient
-from azure.identity.aio import DefaultAzureCredential
+from azure.identity.aio import AzureCliCredential
 
 from app.config import settings
 
 
 class ContentAgent:
     def __init__(self) -> None:
-        self.credential = DefaultAzureCredential()
+        self.credential = AzureCliCredential()
 
         self.client = FoundryChatClient(
             credential=self.credential,
