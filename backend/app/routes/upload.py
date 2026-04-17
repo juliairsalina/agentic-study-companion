@@ -1,8 +1,12 @@
 from fastapi import APIRouter, UploadFile, File, Form, HTTPException
+
 from app.services.storage_service import save_uploaded_file
 from app.services.pdf_service import extract_text_from_pdf
+from app.agents.content_agent import ContentAgent
 
 router = APIRouter(prefix="/upload", tags=["upload"])
+
+content_agent = ContentAgent()
 
 
 @router.post("/")
@@ -28,28 +32,46 @@ async def upload_pdf(
         extracted_text = extract_text_from_pdf(saved_path)
         print("Extraction finished.")
         print(f"Extracted text length: {len(extracted_text)}")
-
-        if extracted_text.strip():
-            print("=== EXTRACTED TEXT PREVIEW START ===")
-            print(extracted_text[:2000])
-            print("=== EXTRACTED TEXT PREVIEW END ===")
-        else:
-            print("No readable text extracted from this PDF.")
-
     except Exception as e:
         print(f"PDF extraction failed: {e}")
         raise HTTPException(status_code=500, detail=f"PDF extraction failed: {str(e)}")
 
-    preview_text = extracted_text[:1500] if extracted_text else ""
+    if not extracted_text.strip():
+        print("No readable text extracted from this PDF.")
+        return {
+            "message": "PDF uploaded but no readable text was extracted",
+            "filename": pdf.filename,
+            "instruction": instruction,
+            "saved_path": saved_path,
+            "text_preview": "",
+            "extracted_text": "",
+            "text_length": 0,
+            "summary": "No readable text could be extracted from this PDF.",
+            "questions": [],
+        }
+
+    try:
+        print("Calling ContentAgent...")
+        agent_result = await content_agent.summarize_and_generate_questions(
+            extracted_text=extracted_text,
+            study_instruction=instruction,
+        )
+        print("ContentAgent finished.")
+        print("Generated question count:", len(agent_result["questions"]))
+    except Exception as e:
+        print(f"ContentAgent failed: {e}")
+        raise HTTPException(status_code=500, detail=f"ContentAgent failed: {str(e)}")
 
     print("=== UPLOAD END ===\n")
 
     return {
-        "message": "PDF uploaded and extracted successfully",
+        "message": "PDF uploaded and processed successfully",
         "filename": pdf.filename,
         "instruction": instruction,
         "saved_path": saved_path,
-        "text_preview": preview_text,
+        "text_preview": extracted_text[:1500],
         "extracted_text": extracted_text,
-        "text_length": len(extracted_text)
+        "text_length": len(extracted_text),
+        "summary": agent_result["summary"],
+        "questions": agent_result["questions"],
     }

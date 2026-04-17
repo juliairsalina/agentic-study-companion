@@ -3,3 +3,6 @@ uvicorn
 python-dotenv
 python-multipart
 pymupdf
+agent-framework
+agent-framework-openai
+azure-identity
