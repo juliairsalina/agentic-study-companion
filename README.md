@@ -1,6 +1,5 @@
 # Study Companion
-
-An agentic study companion to transform passive study materials into an active recall workflow that improves understanding, retention, and self-assessment.
+- An agentic study companion to transform passive study materials into an active recall workflow that improves understanding, retention, and self-assessment.
 
 ## Features
 - Upload lecture PDF
