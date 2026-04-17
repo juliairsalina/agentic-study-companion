@@ -20,6 +20,7 @@
       --danger: #991b1b;
       --danger-bg: #fee2e2;
       --shadow: 0 10px 25px rgba(0, 0, 0, 0.06);
+      --shadow-strong: 0 16px 40px rgba(0, 0, 0, 0.12);
       --radius: 16px;
     }
 
@@ -230,6 +231,178 @@
       font-size: 0.9rem;
     }
 
+    .agent-launcher {
+      position: fixed;
+      right: 22px;
+      bottom: 22px;
+      width: 68px;
+      height: 68px;
+      border-radius: 999px;
+      background: #ffffff;
+      border: 1px solid rgba(37, 99, 235, 0.18);
+      box-shadow: var(--shadow-strong);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      z-index: 40;
+      overflow: hidden;
+    }
+
+    .agent-launcher img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .agent-launcher-fallback {
+      width: 100%;
+      height: 100%;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #2563eb, #60a5fa);
+      color: white;
+      font-weight: 800;
+      font-size: 1.25rem;
+    }
+
+    .agent-launcher.has-fallback .agent-launcher-fallback {
+      display: flex;
+    }
+
+    .agent-bubble {
+      position: fixed;
+      right: 22px;
+      bottom: 102px;
+      width: min(360px, calc(100vw - 24px));
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      box-shadow: var(--shadow-strong);
+      padding: 16px;
+      z-index: 45;
+      transform: translateY(12px) scale(0.98);
+      opacity: 0;
+      pointer-events: none;
+      transition: 0.18s ease;
+    }
+
+    .agent-bubble.open {
+      transform: translateY(0) scale(1);
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .agent-bubble-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .agent-bubble-title {
+      font-size: 1rem;
+      font-weight: 700;
+      margin: 0;
+    }
+
+    .agent-bubble-subtitle {
+      margin: 3px 0 0;
+      color: var(--muted);
+      font-size: 0.88rem;
+    }
+
+    .agent-close-btn {
+      background: #f3f4f6;
+      color: #374151;
+      min-width: 34px;
+      min-height: 34px;
+      padding: 0;
+      border-radius: 999px;
+      font-size: 1rem;
+    }
+
+    .agent-current {
+      border: 1px solid var(--border);
+      background: #f8fafc;
+      border-radius: 14px;
+      padding: 12px;
+      margin-bottom: 12px;
+    }
+
+    .agent-current-label {
+      color: var(--muted);
+      font-size: 0.8rem;
+      margin-bottom: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .agent-current-text {
+      font-weight: 600;
+    }
+
+    .agent-log {
+      display: grid;
+      gap: 8px;
+      max-height: 260px;
+      overflow-y: auto;
+      padding-right: 2px;
+    }
+
+    .agent-log-item {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      padding: 10px 0;
+      border-bottom: 1px solid #f1f5f9;
+    }
+
+    .agent-log-item:last-child {
+      border-bottom: none;
+      padding-bottom: 0;
+    }
+
+    .agent-log-dot {
+      width: 10px;
+      height: 10px;
+      margin-top: 6px;
+      border-radius: 999px;
+      flex-shrink: 0;
+      background: #cbd5e1;
+    }
+
+    .agent-log-dot.done {
+      background: #16a34a;
+    }
+
+    .agent-log-dot.running {
+      background: #2563eb;
+      box-shadow: 0 0 0 6px rgba(37, 99, 235, 0.12);
+    }
+
+    .agent-log-dot.waiting {
+      background: #f59e0b;
+    }
+
+    .agent-log-content {
+      min-width: 0;
+    }
+
+    .agent-log-title {
+      font-size: 0.92rem;
+      font-weight: 700;
+      margin-bottom: 2px;
+    }
+
+    .agent-log-message {
+      color: var(--muted);
+      font-size: 0.88rem;
+    }
+
     @media (max-width: 860px) {
       .two-col {
         grid-template-columns: 1fr;
@@ -241,6 +414,16 @@
 
       .hero h1 {
         font-size: 1.6rem;
+      }
+
+      .agent-launcher {
+        right: 16px;
+        bottom: 16px;
+      }
+
+      .agent-bubble {
+        right: 12px;
+        bottom: 94px;
       }
     }
   </style>
@@ -357,164 +540,203 @@
     </main>
   </div>
 
-  <script>
-    const pdfFile = document.getElementById("pdfFile");
-    const instruction = document.getElementById("instruction");
-    const processBtn = document.getElementById("processBtn");
-    const resetBtn = document.getElementById("resetBtn");
+  <button id="agentLauncher" class="agent-launcher" aria-label="Open agent activity">
+    <img id="agentLogo" src="logo.png" alt="Agent logo" />
+    <div class="agent-launcher-fallback">AI</div>
+  </button>
 
-    const uploadStatus = document.getElementById("uploadStatus");
-    const summaryBox = document.getElementById("summaryBox");
-    const questionList = document.getElementById("questionList");
-    const currentQuestion = document.getElementById("currentQuestion");
+  <aside id="agentBubble" class="agent-bubble" aria-live="polite">
+    <div class="agent-bubble-header">
+      <div>
+        <h3 class="agent-bubble-title">Agent Activity</h3>
+        <p class="agent-bubble-subtitle">See what the AI agents are doing in real time.</p>
+      </div>
+      <button id="agentCloseBtn" class="agent-close-btn" aria-label="Close agent activity">×</button>
+    </div>
 
-    const transcriptBox = document.getElementById("transcriptBox");
-    const statusBadge = document.getElementById("statusBadge");
-    const scoreBox = document.getElementById("scoreBox");
-    const feedbackBox = document.getElementById("feedbackBox");
+    <div class="agent-current">
+      <div class="agent-current-label">Current step</div>
+      <div id="agentCurrentText" class="agent-current-text">Idle. Waiting for your PDF.</div>
+    </div>
 
-    const prevQuestionBtn = document.getElementById("prevQuestionBtn");
-    const nextQuestionBtn = document.getElementById("nextQuestionBtn");
-    const startRecordBtn = document.getElementById("startRecordBtn");
-    const stopRecordBtn = document.getElementById("stopRecordBtn");
-    const evaluateBtn = document.getElementById("evaluateBtn");
-    const retryBtn = document.getElementById("retryBtn");
-    const moveNextBtn = document.getElementById("moveNextBtn");
+    <div id="agentLog" class="agent-log"></div>
+  </aside>
 
-    let questions = [];
-    let currentQuestionIndex = 0;
+ <script>
+  const pdfFile = document.getElementById("pdfFile");
+  const instruction = document.getElementById("instruction");
+  const processBtn = document.getElementById("processBtn");
+  const resetBtn = document.getElementById("resetBtn");
 
-    function renderQuestions() {
-      questionList.innerHTML = "";
+  const uploadStatus = document.getElementById("uploadStatus");
+  const summaryBox = document.getElementById("summaryBox");
+  const questionList = document.getElementById("questionList");
+  const currentQuestion = document.getElementById("currentQuestion");
 
-      if (questions.length === 0) {
-        questionList.innerHTML = `
-          <div class="question-item">
-            <strong>Question list is empty.</strong>
-            <span class="small muted">Generated questions will appear here after processing the PDF.</span>
-          </div>
-        `;
-        currentQuestion.textContent = "Select a generated question to start studying.";
-        return;
-      }
+  const transcriptBox = document.getElementById("transcriptBox");
+  const statusBadge = document.getElementById("statusBadge");
+  const scoreBox = document.getElementById("scoreBox");
+  const feedbackBox = document.getElementById("feedbackBox");
 
-      questions.forEach((q, index) => {
-        const item = document.createElement("div");
-        item.className = "question-item" + (index === currentQuestionIndex ? " active" : "");
-        item.innerHTML = `
-          <strong>Question ${index + 1}</strong>
-          <span>${q}</span>
-        `;
-        item.addEventListener("click", () => {
-          currentQuestionIndex = index;
-          updateCurrentQuestion();
-          renderQuestions();
-        });
-        questionList.appendChild(item);
+  const prevQuestionBtn = document.getElementById("prevQuestionBtn");
+  const nextQuestionBtn = document.getElementById("nextQuestionBtn");
+  const startRecordBtn = document.getElementById("startRecordBtn");
+  const stopRecordBtn = document.getElementById("stopRecordBtn");
+  const evaluateBtn = document.getElementById("evaluateBtn");
+  const retryBtn = document.getElementById("retryBtn");
+  const moveNextBtn = document.getElementById("moveNextBtn");
+
+  let questions = [];
+  let currentQuestionIndex = 0;
+
+  function renderQuestions() {
+    questionList.innerHTML = "";
+
+    if (questions.length === 0) {
+      questionList.innerHTML = `
+        <div class="question-item">
+          <strong>Question list is empty.</strong>
+          <span class="small muted">Generated questions will appear here after processing the PDF.</span>
+        </div>
+      `;
+      currentQuestion.textContent = "Select a generated question to start studying.";
+      return;
+    }
+
+    questions.forEach((q, index) => {
+      const item = document.createElement("div");
+      item.className = "question-item" + (index === currentQuestionIndex ? " active" : "");
+      item.innerHTML = `
+        <strong>Question ${index + 1}</strong>
+        <span>${q}</span>
+      `;
+      item.addEventListener("click", () => {
+        currentQuestionIndex = index;
+        updateCurrentQuestion();
+        renderQuestions();
       });
-
-      updateCurrentQuestion();
-    }
-
-    function updateCurrentQuestion() {
-      if (questions.length === 0) {
-        currentQuestion.textContent = "Select a generated question to start studying.";
-        return;
-      }
-      currentQuestion.textContent = questions[currentQuestionIndex];
-    }
-
-    function resetEvaluationUI() {
-      statusBadge.textContent = "Waiting for evaluation";
-      statusBadge.className = "status partial";
-      scoreBox.textContent = "Score and decision will appear here.";
-      feedbackBox.textContent = "Feedback and hint will appear here.";
-    }
-
-    processBtn.addEventListener("click", () => {
-      const file = pdfFile.files[0];
-
-      if (!file) {
-        uploadStatus.textContent = "Please upload a PDF first.";
-        return;
-      }
-
-      uploadStatus.textContent = `Selected file: ${file.name}`;
-      summaryBox.textContent =
-        "This is a demo summary placeholder. Later, this will come from your backend ContentAgent using Azure OpenAI.";
-      
-      questions = [
-        "What is the main concept discussed in this lecture?",
-        "Explain one important definition from the uploaded material.",
-        "What are the key differences between two major ideas in the lecture?",
-        "Describe an important process or workflow mentioned in the lecture."
-      ];
-
-      currentQuestionIndex = 0;
-      renderQuestions();
-      transcriptBox.textContent = "Transcript will appear here.";
-      resetEvaluationUI();
+      questionList.appendChild(item);
     });
 
-    resetBtn.addEventListener("click", () => {
-      pdfFile.value = "";
-      instruction.value = "";
-      uploadStatus.textContent = "No file uploaded yet.";
-      summaryBox.textContent = "Summary will appear here.";
+    updateCurrentQuestion();
+  }
+
+  function updateCurrentQuestion() {
+    if (questions.length === 0) {
+      currentQuestion.textContent = "Select a generated question to start studying.";
+      return;
+    }
+    currentQuestion.textContent = questions[currentQuestionIndex];
+  }
+
+  function resetEvaluationUI() {
+    statusBadge.textContent = "Waiting for evaluation";
+    statusBadge.className = "status partial";
+    scoreBox.textContent = "Score and decision will appear here.";
+    feedbackBox.textContent = "Feedback and hint will appear here.";
+  }
+
+  processBtn.addEventListener("click", async () => {
+    const file = pdfFile.files[0];
+
+    if (!file) {
+      uploadStatus.textContent = "Please upload a PDF first.";
+      return;
+    }
+
+    uploadStatus.textContent = "Uploading PDF...";
+
+    const formData = new FormData();
+    formData.append("pdf", file);
+    formData.append("instruction", instruction.value);
+
+    try {
+      const response = await fetch("http://127.0.0.1:8000/upload/", {
+        method: "POST",
+        body: formData
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        uploadStatus.textContent = result.detail || "Upload failed.";
+        return;
+      }
+
+      uploadStatus.textContent = `Uploaded: ${result.filename}`;
+      summaryBox.textContent =
+        "Upload successful. Next step: extract PDF text and generate summary.";
       questions = [];
       currentQuestionIndex = 0;
       renderQuestions();
       transcriptBox.textContent = "Transcript will appear here.";
       resetEvaluationUI();
-    });
 
-    prevQuestionBtn.addEventListener("click", () => {
-      if (questions.length === 0) return;
-      currentQuestionIndex = (currentQuestionIndex - 1 + questions.length) % questions.length;
-      updateCurrentQuestion();
-      renderQuestions();
-    });
+      console.log("Upload result:", result);
+    } catch (error) {
+      console.error(error);
+      uploadStatus.textContent = "Could not connect to backend.";
+    }
+  });
 
-    nextQuestionBtn.addEventListener("click", () => {
-      if (questions.length === 0) return;
-      currentQuestionIndex = (currentQuestionIndex + 1) % questions.length;
-      updateCurrentQuestion();
-      renderQuestions();
-    });
-
-    startRecordBtn.addEventListener("click", () => {
-      transcriptBox.textContent = "Recording started... (UI placeholder)";
-    });
-
-    stopRecordBtn.addEventListener("click", () => {
-      transcriptBox.textContent =
-        "This is a placeholder transcript. Later, Azure Speech-to-Text output will be shown here.";
-    });
-
-    evaluateBtn.addEventListener("click", () => {
-      statusBadge.textContent = "Partial answer";
-      statusBadge.className = "status partial";
-
-      scoreBox.textContent = "Score: 0.68\nDecision: Retry with hint";
-      feedbackBox.textContent =
-        "Good attempt, but you missed one important concept. Hint: explain the core mechanism more clearly.";
-    });
-
-    retryBtn.addEventListener("click", () => {
-      transcriptBox.textContent = "Retry the same question and record your answer again.";
-      resetEvaluationUI();
-    });
-
-    moveNextBtn.addEventListener("click", () => {
-      if (questions.length === 0) return;
-      currentQuestionIndex = (currentQuestionIndex + 1) % questions.length;
-      updateCurrentQuestion();
-      renderQuestions();
-      transcriptBox.textContent = "Transcript will appear here.";
-      resetEvaluationUI();
-    });
-
+  resetBtn.addEventListener("click", () => {
+    pdfFile.value = "";
+    instruction.value = "";
+    uploadStatus.textContent = "No file uploaded yet.";
+    summaryBox.textContent = "Summary will appear here.";
+    questions = [];
+    currentQuestionIndex = 0;
     renderQuestions();
-  </script>
+    transcriptBox.textContent = "Transcript will appear here.";
+    resetEvaluationUI();
+  });
+
+  prevQuestionBtn.addEventListener("click", () => {
+    if (questions.length === 0) return;
+    currentQuestionIndex = (currentQuestionIndex - 1 + questions.length) % questions.length;
+    updateCurrentQuestion();
+    renderQuestions();
+  });
+
+  nextQuestionBtn.addEventListener("click", () => {
+    if (questions.length === 0) return;
+    currentQuestionIndex = (currentQuestionIndex + 1) % questions.length;
+    updateCurrentQuestion();
+    renderQuestions();
+  });
+
+  startRecordBtn.addEventListener("click", () => {
+    transcriptBox.textContent = "Recording started... (UI placeholder)";
+  });
+
+  stopRecordBtn.addEventListener("click", () => {
+    transcriptBox.textContent =
+      "This is a placeholder transcript. Later, Azure Speech-to-Text output will be shown here.";
+  });
+
+  evaluateBtn.addEventListener("click", () => {
+    statusBadge.textContent = "Partial answer";
+    statusBadge.className = "status partial";
+    scoreBox.textContent = "Score: 0.68\nDecision: Retry with hint";
+    feedbackBox.textContent =
+      "Good attempt, but you missed one important concept. Hint: explain the core mechanism more clearly.";
+  });
+
+  retryBtn.addEventListener("click", () => {
+    transcriptBox.textContent = "Retry the same question and record your answer again.";
+    resetEvaluationUI();
+  });
+
+  moveNextBtn.addEventListener("click", () => {
+    if (questions.length === 0) return;
+    currentQuestionIndex = (currentQuestionIndex + 1) % questions.length;
+    updateCurrentQuestion();
+    renderQuestions();
+    transcriptBox.textContent = "Transcript will appear here.";
+    resetEvaluationUI();
+  });
+
+  renderQuestions();
+</script>
 </body>
 </html>

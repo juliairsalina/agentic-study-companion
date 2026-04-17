@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from app.routes.upload import router as upload_router
 
 app = FastAPI(
     title="Study Companion API",
@@ -7,10 +8,9 @@ app = FastAPI(
     version="0.1.0",
 )
 
-# Allow frontend to call backend during local development
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # later you can restrict this to your frontend URL
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -19,13 +19,12 @@ app.add_middleware(
 
 @app.get("/")
 def root():
-    return {
-        "message": "Study Companion API is running"
-    }
+    return {"message": "Study Companion API is running"}
 
 
 @app.get("/health")
 def health_check():
-    return {
-        "status": "ok"
-    }
+    return {"status": "ok"}
+
+
+app.include_router(upload_router)
