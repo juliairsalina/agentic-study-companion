@@ -6,6 +6,9 @@ from azure.identity.aio import AzureCliCredential
 
 from app.config import settings
 
+print("FOUNDRY_PROJECT_ENDPOINT:", settings.FOUNDRY_PROJECT_ENDPOINT)
+print("FOUNDRY_MODEL:", settings.FOUNDRY_MODEL)
+
 
 class ContentAgent:
     def __init__(self) -> None:

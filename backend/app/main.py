@@ -2,6 +2,11 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.routes.upload import router as upload_router
 
+from app.config import settings
+
+print("FOUNDRY PROJECT ENDPOINT:", settings.FOUNDRY_PROJECT_ENDPOINT)
+print("FOUNDRY MODEL:", settings.FOUNDRY_MODEL)
+
 app = FastAPI(
     title="Study Companion API",
     description="Backend API for the Agentic Study Companion hackathon project",
