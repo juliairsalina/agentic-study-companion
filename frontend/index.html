@@ -149,12 +149,6 @@
       background: #e0e7ff;
     }
 
-    .btn-disabled {
-      background: #d1d5db;
-      color: #6b7280;
-      cursor: not-allowed;
-    }
-
     .box {
       border: 1px solid var(--border);
       border-radius: 12px;
@@ -175,6 +169,7 @@
       border-radius: 12px;
       padding: 12px;
       background: #fff;
+      cursor: pointer;
     }
 
     .question-item strong {
@@ -219,10 +214,6 @@
 
     .small {
       font-size: 0.9rem;
-    }
-
-    .hidden {
-      display: none;
     }
 
     .footer-note {
@@ -388,21 +379,6 @@
       background: #f59e0b;
     }
 
-    .agent-log-content {
-      min-width: 0;
-    }
-
-    .agent-log-title {
-      font-size: 0.92rem;
-      font-weight: 700;
-      margin-bottom: 2px;
-    }
-
-    .agent-log-message {
-      color: var(--muted);
-      font-size: 0.88rem;
-    }
-
     @media (max-width: 860px) {
       .two-col {
         grid-template-columns: 1fr;
@@ -445,9 +421,7 @@
         <label class="label" for="pdfFile">Lecture PDF</label>
         <input type="file" id="pdfFile" accept=".pdf" />
 
-        <label class="label" for="instruction">
-          Optional study instruction
-        </label>
+        <label class="label" for="instruction">Optional study instruction</label>
         <textarea
           id="instruction"
           placeholder="Example: focus on definitions, exam-style questions, hard questions only, summarize key concepts..."
@@ -562,181 +536,365 @@
     <div id="agentLog" class="agent-log"></div>
   </aside>
 
- <script>
-  const pdfFile = document.getElementById("pdfFile");
-  const instruction = document.getElementById("instruction");
-  const processBtn = document.getElementById("processBtn");
-  const resetBtn = document.getElementById("resetBtn");
+  <script>
+    const pdfFile = document.getElementById("pdfFile");
+    const instruction = document.getElementById("instruction");
+    const processBtn = document.getElementById("processBtn");
+    const resetBtn = document.getElementById("resetBtn");
 
-  const uploadStatus = document.getElementById("uploadStatus");
-  const summaryBox = document.getElementById("summaryBox");
-  const questionList = document.getElementById("questionList");
-  const currentQuestion = document.getElementById("currentQuestion");
+    const uploadStatus = document.getElementById("uploadStatus");
+    const summaryBox = document.getElementById("summaryBox");
+    const questionList = document.getElementById("questionList");
+    const currentQuestion = document.getElementById("currentQuestion");
 
-  const transcriptBox = document.getElementById("transcriptBox");
-  const statusBadge = document.getElementById("statusBadge");
-  const scoreBox = document.getElementById("scoreBox");
-  const feedbackBox = document.getElementById("feedbackBox");
+    const transcriptBox = document.getElementById("transcriptBox");
+    const statusBadge = document.getElementById("statusBadge");
+    const scoreBox = document.getElementById("scoreBox");
+    const feedbackBox = document.getElementById("feedbackBox");
 
-  const prevQuestionBtn = document.getElementById("prevQuestionBtn");
-  const nextQuestionBtn = document.getElementById("nextQuestionBtn");
-  const startRecordBtn = document.getElementById("startRecordBtn");
-  const stopRecordBtn = document.getElementById("stopRecordBtn");
-  const evaluateBtn = document.getElementById("evaluateBtn");
-  const retryBtn = document.getElementById("retryBtn");
-  const moveNextBtn = document.getElementById("moveNextBtn");
+    const prevQuestionBtn = document.getElementById("prevQuestionBtn");
+    const nextQuestionBtn = document.getElementById("nextQuestionBtn");
+    const startRecordBtn = document.getElementById("startRecordBtn");
+    const stopRecordBtn = document.getElementById("stopRecordBtn");
+    const evaluateBtn = document.getElementById("evaluateBtn");
+    const retryBtn = document.getElementById("retryBtn");
+    const moveNextBtn = document.getElementById("moveNextBtn");
 
-  let questions = [];
-  let currentQuestionIndex = 0;
+    const agentLauncher = document.getElementById("agentLauncher");
+    const agentBubble = document.getElementById("agentBubble");
+    const agentCloseBtn = document.getElementById("agentCloseBtn");
+    const agentCurrentText = document.getElementById("agentCurrentText");
+    const agentLog = document.getElementById("agentLog");
+    const agentLogo = document.getElementById("agentLogo");
 
-  function renderQuestions() {
-    questionList.innerHTML = "";
+    let questions = [];
+    let currentQuestionIndex = 0;
+    let agentHistory = [
+      {
+        agent: "WorkflowAgent",
+        title: "Ready",
+        message: "Waiting for your PDF upload.",
+        status: "waiting"
+      }
+    ];
 
-    if (questions.length === 0) {
-      questionList.innerHTML = `
-        <div class="question-item">
-          <strong>Question list is empty.</strong>
-          <span class="small muted">Generated questions will appear here after processing the PDF.</span>
-        </div>
-      `;
-      currentQuestion.textContent = "Select a generated question to start studying.";
-      return;
-    }
+    function renderQuestions() {
+      questionList.innerHTML = "";
 
-    questions.forEach((q, index) => {
-      const item = document.createElement("div");
-      item.className = "question-item" + (index === currentQuestionIndex ? " active" : "");
-      item.innerHTML = `
-        <strong>Question ${index + 1}</strong>
-        <span>${q}</span>
-      `;
-      item.addEventListener("click", () => {
-        currentQuestionIndex = index;
-        updateCurrentQuestion();
-        renderQuestions();
-      });
-      questionList.appendChild(item);
-    });
-
-    updateCurrentQuestion();
-  }
-
-  function updateCurrentQuestion() {
-    if (questions.length === 0) {
-      currentQuestion.textContent = "Select a generated question to start studying.";
-      return;
-    }
-    currentQuestion.textContent = questions[currentQuestionIndex];
-  }
-
-  function resetEvaluationUI() {
-    statusBadge.textContent = "Waiting for evaluation";
-    statusBadge.className = "status partial";
-    scoreBox.textContent = "Score and decision will appear here.";
-    feedbackBox.textContent = "Feedback and hint will appear here.";
-  }
-
-  processBtn.addEventListener("click", async () => {
-    const file = pdfFile.files[0];
-
-    if (!file) {
-      uploadStatus.textContent = "Please upload a PDF first.";
-      return;
-    }
-
-    uploadStatus.textContent = "Uploading PDF...";
-
-    const formData = new FormData();
-    formData.append("pdf", file);
-    formData.append("instruction", instruction.value);
-
-    try {
-      const response = await fetch("http://127.0.0.1:8000/upload/", {
-        method: "POST",
-        body: formData
-      });
-
-      const result = await response.json();
-
-      if (!response.ok) {
-        uploadStatus.textContent = result.detail || "Upload failed.";
+      if (questions.length === 0) {
+        questionList.innerHTML = `
+          <div class="question-item">
+            <strong>Question list is empty.</strong>
+            <span class="small muted">Generated questions will appear here after processing the PDF.</span>
+          </div>
+        `;
+        currentQuestion.textContent = "Select a generated question to start studying.";
         return;
       }
 
-      uploadStatus.textContent = `Uploaded: ${result.filename}`;
-      summaryBox.textContent =
-        "Upload successful. Next step: extract PDF text and generate summary.";
+      questions.forEach((q, index) => {
+        const item = document.createElement("div");
+        item.className = "question-item" + (index === currentQuestionIndex ? " active" : "");
+        item.innerHTML = `
+          <strong>Question ${index + 1}</strong>
+          <span>${q}</span>
+        `;
+        item.addEventListener("click", () => {
+          currentQuestionIndex = index;
+          updateCurrentQuestion();
+          renderQuestions();
+          openAgentBubble();
+          setAgentCurrent("WorkflowAgent is showing a different generated question.");
+          addAgentLog("WorkflowAgent", "Question selected", `Loaded question ${index + 1} for study.`, "done");
+        });
+        questionList.appendChild(item);
+      });
+
+      updateCurrentQuestion();
+    }
+
+    function updateCurrentQuestion() {
+      if (questions.length === 0) {
+        currentQuestion.textContent = "Select a generated question to start studying.";
+        return;
+      }
+      currentQuestion.textContent = questions[currentQuestionIndex];
+    }
+
+    function resetEvaluationUI() {
+      statusBadge.textContent = "Waiting for evaluation";
+      statusBadge.className = "status partial";
+      scoreBox.textContent = "Score and decision will appear here.";
+      feedbackBox.textContent = "Feedback and hint will appear here.";
+    }
+
+    function setAgentCurrent(message) {
+      agentCurrentText.textContent = message;
+      console.log("[Agent Current]", message);
+    }
+
+    function renderAgentLog() {
+      agentLog.innerHTML = "";
+      const displayItems = agentHistory.slice().reverse();
+
+      displayItems.forEach((entry) => {
+        const item = document.createElement("div");
+        item.className = "agent-log-item";
+        item.innerHTML = `
+          <div class="agent-log-dot ${entry.status}"></div>
+          <div>
+            <div style="font-size:0.92rem;font-weight:700;margin-bottom:2px;">${entry.agent}: ${entry.title}</div>
+            <div style="color:#6b7280;font-size:0.88rem;">${entry.message}</div>
+          </div>
+        `;
+        agentLog.appendChild(item);
+      });
+    }
+
+    function addAgentLog(agent, title, message, status = "done") {
+      const entry = { agent, title, message, status };
+      agentHistory.push(entry);
+      if (agentHistory.length > 12) {
+        agentHistory = agentHistory.slice(agentHistory.length - 12);
+      }
+      renderAgentLog();
+      console.log(`[${agent}] ${title} - ${message}`);
+    }
+
+    function openAgentBubble() {
+      agentBubble.classList.add("open");
+    }
+
+    function closeAgentBubble() {
+      agentBubble.classList.remove("open");
+    }
+
+    function resetAgentState() {
+      agentHistory = [
+        {
+          agent: "WorkflowAgent",
+          title: "Ready",
+          message: "Waiting for your PDF upload.",
+          status: "waiting"
+        }
+      ];
+      setAgentCurrent("Idle. Waiting for your PDF.");
+      renderAgentLog();
+    }
+
+    agentLauncher.addEventListener("click", () => {
+      agentBubble.classList.toggle("open");
+    });
+
+    agentCloseBtn.addEventListener("click", () => {
+      closeAgentBubble();
+    });
+
+    document.addEventListener("click", (event) => {
+      const clickedInsideBubble = agentBubble.contains(event.target);
+      const clickedLauncher = agentLauncher.contains(event.target);
+      if (!clickedInsideBubble && !clickedLauncher) {
+        closeAgentBubble();
+      }
+    });
+
+    agentLogo.addEventListener("error", () => {
+      agentLauncher.classList.add("has-fallback");
+      agentLogo.style.display = "none";
+    });
+
+    processBtn.addEventListener("click", async () => {
+      const file = pdfFile.files[0];
+
+      if (!file) {
+        uploadStatus.textContent = "Please upload a PDF first.";
+        openAgentBubble();
+        setAgentCurrent("No PDF selected.");
+        addAgentLog("WorkflowAgent", "Upload blocked", "Please choose a PDF first.", "waiting");
+        return;
+      }
+
+      if (!file.name.toLowerCase().endsWith(".pdf")) {
+        uploadStatus.textContent = "Only PDF files are allowed.";
+        openAgentBubble();
+        setAgentCurrent("Invalid file type.");
+        addAgentLog("WorkflowAgent", "Upload blocked", "Only PDF files are allowed.", "waiting");
+        return;
+      }
+
+      processBtn.disabled = true;
+      processBtn.textContent = "Processing...";
+      uploadStatus.textContent = "Uploading PDF...";
+      summaryBox.textContent = "Waiting for backend response...";
+      transcriptBox.textContent = "Transcript will appear here.";
+      questions = [];
+      currentQuestionIndex = 0;
+      renderQuestions();
+      resetEvaluationUI();
+
+      openAgentBubble();
+      resetAgentState();
+      setAgentCurrent("WorkflowAgent is starting your study session.");
+      addAgentLog("WorkflowAgent", "Session started", `Received file: ${file.name}`, "running");
+
+      const formData = new FormData();
+      formData.append("pdf", file);
+      formData.append("instruction", instruction.value || "");
+
+      const step1 = setTimeout(() => {
+        setAgentCurrent("WorkflowAgent is saving your PDF.");
+        addAgentLog("WorkflowAgent", "Saving PDF", "Storing uploaded file locally.", "running");
+      }, 300);
+
+      const step2 = setTimeout(() => {
+        setAgentCurrent("WorkflowAgent is extracting text from your PDF.");
+        addAgentLog("WorkflowAgent", "Extracting content", "Reading lecture text page by page.", "running");
+      }, 900);
+
+      try {
+        const response = await fetch("http://127.0.0.1:8000/upload/", {
+          method: "POST",
+          body: formData
+        });
+
+        clearTimeout(step1);
+        clearTimeout(step2);
+
+        const result = await response.json();
+
+        if (!response.ok) {
+          uploadStatus.textContent = result.detail || "Upload failed.";
+          summaryBox.textContent = "Upload failed.";
+          setAgentCurrent("Upload failed.");
+          addAgentLog("WorkflowAgent", "Upload failed", result.detail || "Unknown error.", "waiting");
+          return;
+        }
+
+        uploadStatus.textContent = `Uploaded successfully: ${result.filename}`;
+        summaryBox.textContent =
+          result.summary || "Summary generation failed.";
+
+        questions = Array.isArray(result.questions) ? result.questions : [];
+        currentQuestionIndex = 0;
+        renderQuestions();
+
+        setAgentCurrent("ContentAgent finished summary and question generation.");
+        addAgentLog("ContentAgent", "Summary ready", "AI summary generated from extracted lecture text.", "done");
+        addAgentLog(
+          "ContentAgent",
+          "Questions ready",
+          `Generated ${questions.length} study question(s).`,
+          "done"
+        );
+
+        questions = [
+          "What is the main concept discussed in this lecture?",
+          "Explain one important definition from the uploaded material.",
+          "What are the key differences between two major ideas in the lecture?",
+          "Describe an important process or workflow mentioned in the lecture."
+        ];
+
+        currentQuestionIndex = 0;
+        renderQuestions();
+      } catch (error) {
+        console.error("Upload error:", error);
+        uploadStatus.textContent = "Could not connect to backend.";
+        summaryBox.textContent = "Connection to backend failed.";
+        setAgentCurrent("Backend connection failed.");
+        addAgentLog("WorkflowAgent", "Connection error", "Could not reach backend API.", "waiting");
+      } finally {
+        processBtn.disabled = false;
+        processBtn.textContent = "Process PDF";
+      }
+    });
+
+    resetBtn.addEventListener("click", () => {
+      pdfFile.value = "";
+      instruction.value = "";
+      uploadStatus.textContent = "No file uploaded yet.";
+      summaryBox.textContent = "Summary will appear here.";
       questions = [];
       currentQuestionIndex = 0;
       renderQuestions();
       transcriptBox.textContent = "Transcript will appear here.";
       resetEvaluationUI();
+      resetAgentState();
+    });
 
-      console.log("Upload result:", result);
-    } catch (error) {
-      console.error(error);
-      uploadStatus.textContent = "Could not connect to backend.";
-    }
-  });
+    prevQuestionBtn.addEventListener("click", () => {
+      if (questions.length === 0) return;
+      currentQuestionIndex = (currentQuestionIndex - 1 + questions.length) % questions.length;
+      updateCurrentQuestion();
+      renderQuestions();
+      openAgentBubble();
+      setAgentCurrent("WorkflowAgent moved to the previous question.");
+      addAgentLog("WorkflowAgent", "Moved backward", "Loaded the previous question.", "done");
+    });
 
-  resetBtn.addEventListener("click", () => {
-    pdfFile.value = "";
-    instruction.value = "";
-    uploadStatus.textContent = "No file uploaded yet.";
-    summaryBox.textContent = "Summary will appear here.";
-    questions = [];
-    currentQuestionIndex = 0;
+    nextQuestionBtn.addEventListener("click", () => {
+      if (questions.length === 0) return;
+      currentQuestionIndex = (currentQuestionIndex + 1) % questions.length;
+      updateCurrentQuestion();
+      renderQuestions();
+      openAgentBubble();
+      setAgentCurrent("WorkflowAgent moved to the next question.");
+      addAgentLog("WorkflowAgent", "Moved forward", "Loaded the next question.", "done");
+    });
+
+    startRecordBtn.addEventListener("click", () => {
+      transcriptBox.textContent = "Recording started... (UI placeholder)";
+      openAgentBubble();
+      setAgentCurrent("Azure Speech is listening to your spoken answer.");
+      addAgentLog("WorkflowAgent", "Recording started", "The study session is now listening for your answer.", "running");
+    });
+
+    stopRecordBtn.addEventListener("click", () => {
+      transcriptBox.textContent =
+        "This is a placeholder transcript. Later, Azure Speech-to-Text output will be shown here.";
+      openAgentBubble();
+      setAgentCurrent("Azure Speech finished transcription.");
+      addAgentLog("Azure Speech", "Transcript ready", "The spoken answer was converted into text.", "done");
+    });
+
+    evaluateBtn.addEventListener("click", async () => {
+      openAgentBubble();
+      setAgentCurrent("EvaluationAgent is checking concept coverage and answer quality.");
+      addAgentLog("EvaluationAgent", "Evaluating answer", "Comparing the transcript with expected concepts.", "running");
+
+      await new Promise((resolve) => setTimeout(resolve, 500));
+
+      statusBadge.textContent = "Partial answer";
+      statusBadge.className = "status partial";
+      scoreBox.textContent = "Score: 0.68\nDecision: Retry with hint";
+      feedbackBox.textContent =
+        "Good attempt, but you missed one important concept. Hint: explain the core mechanism more clearly.";
+
+      setAgentCurrent("WorkflowAgent recommends a retry with hint.");
+      addAgentLog("WorkflowAgent", "Next action chosen", "The answer was partial, so one retry is recommended.", "done");
+    });
+
+    retryBtn.addEventListener("click", () => {
+      transcriptBox.textContent = "Retry the same question and record your answer again.";
+      resetEvaluationUI();
+      openAgentBubble();
+      setAgentCurrent("WorkflowAgent reset the current question for one more attempt.");
+      addAgentLog("WorkflowAgent", "Retry enabled", "You can answer the same question again with the hint in mind.", "waiting");
+    });
+
+    moveNextBtn.addEventListener("click", () => {
+      if (questions.length === 0) return;
+      currentQuestionIndex = (currentQuestionIndex + 1) % questions.length;
+      updateCurrentQuestion();
+      renderQuestions();
+      transcriptBox.textContent = "Transcript will appear here.";
+      resetEvaluationUI();
+      openAgentBubble();
+      setAgentCurrent("WorkflowAgent advanced to the next question.");
+      addAgentLog("WorkflowAgent", "Moved forward", "Loaded the next question for continued study.", "done");
+    });
+
+    resetAgentState();
     renderQuestions();
-    transcriptBox.textContent = "Transcript will appear here.";
-    resetEvaluationUI();
-  });
-
-  prevQuestionBtn.addEventListener("click", () => {
-    if (questions.length === 0) return;
-    currentQuestionIndex = (currentQuestionIndex - 1 + questions.length) % questions.length;
-    updateCurrentQuestion();
-    renderQuestions();
-  });
-
-  nextQuestionBtn.addEventListener("click", () => {
-    if (questions.length === 0) return;
-    currentQuestionIndex = (currentQuestionIndex + 1) % questions.length;
-    updateCurrentQuestion();
-    renderQuestions();
-  });
-
-  startRecordBtn.addEventListener("click", () => {
-    transcriptBox.textContent = "Recording started... (UI placeholder)";
-  });
-
-  stopRecordBtn.addEventListener("click", () => {
-    transcriptBox.textContent =
-      "This is a placeholder transcript. Later, Azure Speech-to-Text output will be shown here.";
-  });
-
-  evaluateBtn.addEventListener("click", () => {
-    statusBadge.textContent = "Partial answer";
-    statusBadge.className = "status partial";
-    scoreBox.textContent = "Score: 0.68\nDecision: Retry with hint";
-    feedbackBox.textContent =
-      "Good attempt, but you missed one important concept. Hint: explain the core mechanism more clearly.";
-  });
-
-  retryBtn.addEventListener("click", () => {
-    transcriptBox.textContent = "Retry the same question and record your answer again.";
-    resetEvaluationUI();
-  });
-
-  moveNextBtn.addEventListener("click", () => {
-    if (questions.length === 0) return;
-    currentQuestionIndex = (currentQuestionIndex + 1) % questions.length;
-    updateCurrentQuestion();
-    renderQuestions();
-    transcriptBox.textContent = "Transcript will appear here.";
-    resetEvaluationUI();
-  });
-
-  renderQuestions();
-</script>
+  </script>
 </body>
 </html>
