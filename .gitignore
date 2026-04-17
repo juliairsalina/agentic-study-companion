@@ -1,0 +1,15 @@
+.env
+.venv/
+__pycache__/
+*.pyc
+.DS_Store
+backend/app/data/uploads/*
+backend/app/data/summaries/*
+backend/app/data/questions/*
+backend/app/data/transcripts/*
+backend/app/data/evaluations/*
+!backend/app/data/uploads/.gitkeep
+!backend/app/data/summaries/.gitkeep
+!backend/app/data/questions/.gitkeep
+!backend/app/data/transcripts/.gitkeep
+!backend/app/data/evaluations/.gitkeep
