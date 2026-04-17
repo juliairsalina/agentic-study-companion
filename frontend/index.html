@@ -771,8 +771,7 @@
         }
 
         uploadStatus.textContent = `Uploaded successfully: ${result.filename}`;
-        summaryBox.textContent =
-          result.summary || "Summary generation failed.";
+        summaryBox.textContent = result.summary || "Summary generation failed.";
 
         questions = Array.isArray(result.questions) ? result.questions : [];
         currentQuestionIndex = 0;
@@ -787,15 +786,10 @@
           "done"
         );
 
-        questions = [
-          "What is the main concept discussed in this lecture?",
-          "Explain one important definition from the uploaded material.",
-          "What are the key differences between two major ideas in the lecture?",
-          "Describe an important process or workflow mentioned in the lecture."
-        ];
+        console.log("Returned questions:", result.questions);
+        console.log("Question count:", result.questions?.length);
 
-        currentQuestionIndex = 0;
-        renderQuestions();
+
       } catch (error) {
         console.error("Upload error:", error);
         uploadStatus.textContent = "Could not connect to backend.";
