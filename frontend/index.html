@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Study Companion</title>
+  <style>
+    :root {
+      --bg: #f6f8fb;
+      --card: #ffffff;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --primary: #2563eb;
+      --primary-dark: #1d4ed8;
+      --border: #e5e7eb;
+      --success: #166534;
+      --success-bg: #dcfce7;
+      --warning: #92400e;
+      --warning-bg: #fef3c7;
+      --danger: #991b1b;
+      --danger-bg: #fee2e2;
+      --shadow: 0 10px 25px rgba(0, 0, 0, 0.06);
+      --radius: 16px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+
+    .hero {
+      margin-bottom: 24px;
+    }
+
+    .hero h1 {
+      margin: 0 0 8px;
+      font-size: 2rem;
+    }
+
+    .hero p {
+      margin: 0;
+      color: var(--muted);
+      max-width: 700px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 20px;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 20px;
+    }
+
+    .card h2 {
+      margin-top: 0;
+      margin-bottom: 12px;
+      font-size: 1.15rem;
+    }
+
+    .muted {
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    .label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 600;
+      font-size: 0.95rem;
+    }
+
+    input[type="file"],
+    textarea,
+    button {
+      font: inherit;
+    }
+
+    input[type="file"] {
+      width: 100%;
+      margin-bottom: 14px;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 90px;
+      resize: vertical;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px;
+      outline: none;
+      background: #fff;
+    }
+
+    textarea:focus {
+      border-color: var(--primary);
+    }
+
+    .button-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    button {
+      border: none;
+      border-radius: 10px;
+      padding: 10px 16px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: 0.2s ease;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: var(--primary-dark);
+    }
+
+    .btn-secondary {
+      background: #eef2ff;
+      color: #1e3a8a;
+    }
+
+    .btn-secondary:hover {
+      background: #e0e7ff;
+    }
+
+    .btn-disabled {
+      background: #d1d5db;
+      color: #6b7280;
+      cursor: not-allowed;
+    }
+
+    .box {
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px;
+      background: #fafafa;
+      min-height: 72px;
+      white-space: pre-wrap;
+    }
+
+    .question-list {
+      display: grid;
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .question-item {
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px;
+      background: #fff;
+    }
+
+    .question-item strong {
+      display: block;
+      margin-bottom: 6px;
+    }
+
+    .question-item.active {
+      border-color: var(--primary);
+      background: #eff6ff;
+    }
+
+    .status {
+      display: inline-block;
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+
+    .status.good {
+      color: var(--success);
+      background: var(--success-bg);
+    }
+
+    .status.partial {
+      color: var(--warning);
+      background: var(--warning-bg);
+    }
+
+    .status.weak {
+      color: var(--danger);
+      background: var(--danger-bg);
+    }
+
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    .small {
+      font-size: 0.9rem;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .footer-note {
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    @media (max-width: 860px) {
+      .two-col {
+        grid-template-columns: 1fr;
+      }
+
+      .container {
+        padding: 16px;
+      }
+
+      .hero h1 {
+        font-size: 1.6rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header class="hero">
+      <h1>Yapping Flashcard</h1>
+      <p>
+        Upload your lecture PDF, generate an AI summary and study questions, then answer by yapping and get feedback.
+      </p>
+    </header>
+
+    <main class="grid">
+      <section class="card">
+        <h2>1. Upload Study Material</h2>
+        <p class="muted">Upload one lecture PDF and optionally tell the AI what kind of study help you want.</p>
+
+        <label class="label" for="pdfFile">Lecture PDF</label>
+        <input type="file" id="pdfFile" accept=".pdf" />
+
+        <label class="label" for="instruction">
+          Optional study instruction
+        </label>
+        <textarea
+          id="instruction"
+          placeholder="Example: focus on definitions, exam-style questions, hard questions only, summarize key concepts..."
+        ></textarea>
+
+        <div class="button-row">
+          <button id="processBtn" class="btn-primary">Process PDF</button>
+          <button id="resetBtn" class="btn-secondary">Reset</button>
+        </div>
+
+        <p class="footer-note" id="uploadStatus">No file uploaded yet.</p>
+      </section>
+
+      <section class="card">
+        <h2>2. AI Summary</h2>
+        <p class="muted">This section will display the generated summary from the uploaded PDF.</p>
+        <div id="summaryBox" class="box">Summary will appear here.</div>
+      </section>
+
+      <section class="card">
+        <h2>3. Generated Questions</h2>
+        <p class="muted">These are the study questions generated from your lecture material.</p>
+        <div id="questionList" class="question-list">
+          <div class="question-item">
+            <strong>Question list is empty.</strong>
+            <span class="small muted">Generated questions will appear here after processing the PDF.</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>4. Study Session</h2>
+        <div class="two-col">
+          <div>
+            <p class="muted">Current question</p>
+            <div id="currentQuestion" class="box">
+              Select a generated question to start studying.
+            </div>
+
+            <div class="button-row">
+              <button id="prevQuestionBtn" class="btn-secondary">Previous</button>
+              <button id="nextQuestionBtn" class="btn-secondary">Next</button>
+            </div>
+          </div>
+
+          <div>
+            <p class="muted">Spoken answer</p>
+            <div class="button-row">
+              <button id="startRecordBtn" class="btn-primary">Start Recording</button>
+              <button id="stopRecordBtn" class="btn-secondary">Stop Recording</button>
+            </div>
+
+            <p class="footer-note">
+              For now, this is UI only. Later, connect it to Azure Speech-to-Text.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>5. Transcript</h2>
+        <p class="muted">The speech-to-text result will appear here.</p>
+        <div id="transcriptBox" class="box">Transcript will appear here.</div>
+      </section>
+
+      <section class="card">
+        <h2>6. Evaluation</h2>
+        <p class="muted">The evaluation agent will check the answer and recommend the next step.</p>
+
+        <div id="statusBadge" class="status partial">Waiting for evaluation</div>
+
+        <div class="two-col">
+          <div>
+            <label class="label">Score / Decision</label>
+            <div id="scoreBox" class="box">Score and decision will appear here.</div>
+          </div>
+
+          <div>
+            <label class="label">Feedback / Hint</label>
+            <div id="feedbackBox" class="box">Feedback and hint will appear here.</div>
+          </div>
+        </div>
+
+        <div class="button-row">
+          <button id="evaluateBtn" class="btn-primary">Evaluate Answer</button>
+          <button id="retryBtn" class="btn-secondary">Retry Question</button>
+          <button id="moveNextBtn" class="btn-secondary">Move to Next</button>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const pdfFile = document.getElementById("pdfFile");
+    const instruction = document.getElementById("instruction");
+    const processBtn = document.getElementById("processBtn");
+    const resetBtn = document.getElementById("resetBtn");
+
+    const uploadStatus = document.getElementById("uploadStatus");
+    const summaryBox = document.getElementById("summaryBox");
+    const questionList = document.getElementById("questionList");
+    const currentQuestion = document.getElementById("currentQuestion");
+
+    const transcriptBox = document.getElementById("transcriptBox");
+    const statusBadge = document.getElementById("statusBadge");
+    const scoreBox = document.getElementById("scoreBox");
+    const feedbackBox = document.getElementById("feedbackBox");
+
+    const prevQuestionBtn = document.getElementById("prevQuestionBtn");
+    const nextQuestionBtn = document.getElementById("nextQuestionBtn");
+    const startRecordBtn = document.getElementById("startRecordBtn");
+    const stopRecordBtn = document.getElementById("stopRecordBtn");
+    const evaluateBtn = document.getElementById("evaluateBtn");
+    const retryBtn = document.getElementById("retryBtn");
+    const moveNextBtn = document.getElementById("moveNextBtn");
+
+    let questions = [];
+    let currentQuestionIndex = 0;
+
+    function renderQuestions() {
+      questionList.innerHTML = "";
+
+      if (questions.length === 0) {
+        questionList.innerHTML = `
+          <div class="question-item">
+            <strong>Question list is empty.</strong>
+            <span class="small muted">Generated questions will appear here after processing the PDF.</span>
+          </div>
+        `;
+        currentQuestion.textContent = "Select a generated question to start studying.";
+        return;
+      }
+
+      questions.forEach((q, index) => {
+        const item = document.createElement("div");
+        item.className = "question-item" + (index === currentQuestionIndex ? " active" : "");
+        item.innerHTML = `
+          <strong>Question ${index + 1}</strong>
+          <span>${q}</span>
+        `;
+        item.addEventListener("click", () => {
+          currentQuestionIndex = index;
+          updateCurrentQuestion();
+          renderQuestions();
+        });
+        questionList.appendChild(item);
+      });
+
+      updateCurrentQuestion();
+    }
+
+    function updateCurrentQuestion() {
+      if (questions.length === 0) {
+        currentQuestion.textContent = "Select a generated question to start studying.";
+        return;
+      }
+      currentQuestion.textContent = questions[currentQuestionIndex];
+    }
+
+    function resetEvaluationUI() {
+      statusBadge.textContent = "Waiting for evaluation";
+      statusBadge.className = "status partial";
+      scoreBox.textContent = "Score and decision will appear here.";
+      feedbackBox.textContent = "Feedback and hint will appear here.";
+    }
+
+    processBtn.addEventListener("click", () => {
+      const file = pdfFile.files[0];
+
+      if (!file) {
+        uploadStatus.textContent = "Please upload a PDF first.";
+        return;
+      }
+
+      uploadStatus.textContent = `Selected file: ${file.name}`;
+      summaryBox.textContent =
+        "This is a demo summary placeholder. Later, this will come from your backend ContentAgent using Azure OpenAI.";
+      
+      questions = [
+        "What is the main concept discussed in this lecture?",
+        "Explain one important definition from the uploaded material.",
+        "What are the key differences between two major ideas in the lecture?",
+        "Describe an important process or workflow mentioned in the lecture."
+      ];
+
+      currentQuestionIndex = 0;
+      renderQuestions();
+      transcriptBox.textContent = "Transcript will appear here.";
+      resetEvaluationUI();
+    });
+
+    resetBtn.addEventListener("click", () => {
+      pdfFile.value = "";
+      instruction.value = "";
+      uploadStatus.textContent = "No file uploaded yet.";
+      summaryBox.textContent = "Summary will appear here.";
+      questions = [];
+      currentQuestionIndex = 0;
+      renderQuestions();
+      transcriptBox.textContent = "Transcript will appear here.";
+      resetEvaluationUI();
+    });
+
+    prevQuestionBtn.addEventListener("click", () => {
+      if (questions.length === 0) return;
+      currentQuestionIndex = (currentQuestionIndex - 1 + questions.length) % questions.length;
+      updateCurrentQuestion();
+      renderQuestions();
+    });
+
+    nextQuestionBtn.addEventListener("click", () => {
+      if (questions.length === 0) return;
+      currentQuestionIndex = (currentQuestionIndex + 1) % questions.length;
+      updateCurrentQuestion();
+      renderQuestions();
+    });
+
+    startRecordBtn.addEventListener("click", () => {
+      transcriptBox.textContent = "Recording started... (UI placeholder)";
+    });
+
+    stopRecordBtn.addEventListener("click", () => {
+      transcriptBox.textContent =
+        "This is a placeholder transcript. Later, Azure Speech-to-Text output will be shown here.";
+    });
+
+    evaluateBtn.addEventListener("click", () => {
+      statusBadge.textContent = "Partial answer";
+      statusBadge.className = "status partial";
+
+      scoreBox.textContent = "Score: 0.68\nDecision: Retry with hint";
+      feedbackBox.textContent =
+        "Good attempt, but you missed one important concept. Hint: explain the core mechanism more clearly.";
+    });
+
+    retryBtn.addEventListener("click", () => {
+      transcriptBox.textContent = "Retry the same question and record your answer again.";
+      resetEvaluationUI();
+    });
+
+    moveNextBtn.addEventListener("click", () => {
+      if (questions.length === 0) return;
+      currentQuestionIndex = (currentQuestionIndex + 1) % questions.length;
+      updateCurrentQuestion();
+      renderQuestions();
+      transcriptBox.textContent = "Transcript will appear here.";
+      resetEvaluationUI();
+    });
+
+    renderQuestions();
+  </script>
+</body>
+</html>
