@@ -47,6 +47,7 @@ async def upload_pdf(
             "extracted_text": "",
             "text_length": 0,
             "summary": "No readable text could be extracted from this PDF.",
+            "topics": [],
             "questions": [],
         }
 
@@ -72,6 +73,7 @@ async def upload_pdf(
         "text_preview": extracted_text[:1500],
         "extracted_text": extracted_text,
         "text_length": len(extracted_text),
-        "summary": agent_result["summary"],
-        "questions": agent_result["questions"],
+        "summary": agent_result.get("summary", ""),
+        "topics": agent_result.get("topics", []),
+        "questions": agent_result.get("questions", []),
     }
