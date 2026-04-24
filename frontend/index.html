@@ -597,7 +597,7 @@
         item.className = "question-item" + (index === currentQuestionIndex ? " active" : "");
         item.innerHTML = `
           <strong>Question ${index + 1}</strong>
-          <span>${q}</span>
+          <span>${q.question}</span>
         `;
         item.addEventListener("click", () => {
           currentQuestionIndex = index;
@@ -618,7 +618,8 @@
         currentQuestion.textContent = "Select a generated question to start studying.";
         return;
       }
-      currentQuestion.textContent = questions[currentQuestionIndex];
+
+      currentQuestion.textContent = questions[currentQuestionIndex].question;
     }
 
     function resetEvaluationUI() {
