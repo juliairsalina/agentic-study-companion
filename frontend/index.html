@@ -844,27 +844,131 @@
 
     stopRecordBtn.addEventListener("click", () => {
       transcriptBox.textContent =
-        "This is a placeholder transcript. Later, Azure Speech-to-Text output will be shown here.";
+        "inode stores metadata like permissions and size, while the filename is stored in the directory entry";
       openAgentBubble();
       setAgentCurrent("Azure Speech finished transcription.");
       addAgentLog("Azure Speech", "Transcript ready", "The spoken answer was converted into text.", "done");
     });
 
     evaluateBtn.addEventListener("click", async () => {
+      if (questions.length === 0) return;
+
+      const current = questions[currentQuestionIndex];
+      const transcript = transcriptBox.textContent.trim();
+
+      if (!transcript || transcript === "Transcript will appear here.") {
+        feedbackBox.textContent = "No transcript available yet.";
+        return;
+      }
+
       openAgentBubble();
-      setAgentCurrent("EvaluationAgent is checking concept coverage and answer quality.");
-      addAgentLog("EvaluationAgent", "Evaluating answer", "Comparing the transcript with expected concepts.", "running");
+      setAgentCurrent("CoachAgent is evaluating your answer.");
+      addAgentLog("CoachAgent", "Evaluating answer", "Checking concept coverage against the expected answer.", "running");
 
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      const coachPayload = {
+        questionId: current.id,
+        topic: current.topic,
+        question: current.question,
+        transcript: transcript,
+        idealAnswer: current.idealAnswer,
+        keywords: current.keywords || [],
+        sourceChunkIds: current.sourceChunkIds || []
+      };
 
-      statusBadge.textContent = "Partial answer";
-      statusBadge.className = "status partial";
-      scoreBox.textContent = "Score: 0.68\nDecision: Retry with hint";
-      feedbackBox.textContent =
-        "Good attempt, but you missed one important concept. Hint: explain the core mechanism more clearly.";
+      try {
+        // 1. Call CoachAgent
+        const coachResponse = await fetch("http://127.0.0.1:8000/evaluate/", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(coachPayload)
+        });
 
-      setAgentCurrent("WorkflowAgent recommends a retry with hint.");
-      addAgentLog("WorkflowAgent", "Next action chosen", "The answer was partial, so one retry is recommended.", "done");
+        const coachResult = await coachResponse.json();
+
+        if (!coachResponse.ok) {
+          feedbackBox.textContent = coachResult.detail || "Evaluation failed.";
+          setAgentCurrent("CoachAgent evaluation failed.");
+          addAgentLog("CoachAgent", "Evaluation failed", coachResult.detail || "Unknown error.", "waiting");
+          return;
+        }
+
+        setAgentCurrent("WorkflowAgent is deciding the next step.");
+        addAgentLog("WorkflowAgent", "Decision in progress", "Reading evaluation result and choosing the next action.", "running");
+
+        // 2. Call WorkflowAgent
+        const workflowPayload = {
+          question: current,
+          coachResult: coachResult
+        };
+
+        const workflowResponse = await fetch("http://127.0.0.1:8000/workflow/decide", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(workflowPayload)
+        });
+
+        const workflowResult = await workflowResponse.json();
+
+        if (!workflowResponse.ok) {
+          feedbackBox.textContent = workflowResult.detail || "Workflow decision failed.";
+          setAgentCurrent("WorkflowAgent decision failed.");
+          addAgentLog("WorkflowAgent", "Decision failed", workflowResult.detail || "Unknown error.", "waiting");
+          return;
+        }
+
+        const decision = workflowResult.decision;
+
+        // 3. Show coach result
+        statusBadge.textContent = decision.action;
+        statusBadge.className =
+          decision.action === "advance"
+            ? "status good"
+            : decision.action === "hint_retry"
+            ? "status partial"
+            : "status weak";
+
+        scoreBox.textContent =
+          `Score: ${coachResult.score}\nRecommendation: ${coachResult.recommendation}`;
+
+        feedbackBox.textContent =
+          `${coachResult.feedback}\n\nMissing concepts: ${(coachResult.missingConcepts || []).join(", ")}\n\nNext step: ${decision.messageToUser}`;
+
+        // 4. Apply workflow decision to UI
+        setAgentCurrent(`WorkflowAgent decided: ${decision.action}`);
+        addAgentLog("WorkflowAgent", "Decision complete", decision.messageToUser, "done");
+
+        console.log("CoachAgent result:", coachResult);
+        console.log("WorkflowAgent result:", workflowResult);
+
+        if (decision.action === "hint_retry") {
+          transcriptBox.textContent = "Retry the same question and answer again.";
+        }
+
+        if (decision.action === "advance") {
+          if (currentQuestionIndex < questions.length - 1) {
+            currentQuestionIndex += 1;
+            updateCurrentQuestion();
+            renderQuestions();
+          }
+        }
+
+        if (decision.action === "reveal_and_move") {
+          if (currentQuestionIndex < questions.length - 1) {
+            currentQuestionIndex += 1;
+            updateCurrentQuestion();
+            renderQuestions();
+          }
+        }
+      } catch (error) {
+        console.error("Evaluate/Workflow error:", error);
+        feedbackBox.textContent = "Could not connect to backend.";
+        setAgentCurrent("Backend connection failed.");
+        addAgentLog("WorkflowAgent", "Connection error", "Could not reach evaluation or workflow endpoint.", "waiting");
+      }
     });
 
     retryBtn.addEventListener("click", () => {
