@@ -36,11 +36,19 @@ const agentCurrentText = document.getElementById("agentCurrentText");
 const agentLog = document.getElementById("agentLog");
 const agentLogo = document.getElementById("agentLogo");
 
+const speechKeyMeta = document.querySelector('meta[name="azure-speech-key"]');
+const speechRegionMeta = document.querySelector('meta[name="azure-speech-region"]');
+
+const AZURE_SPEECH_KEY = speechKeyMeta?.content || "";
+const AZURE_SPEECH_REGION = speechRegionMeta?.content || "";
+
 let questions = [];
 let currentQuestionIndex = 0;
 let isRecording = false;
 let reflectionInterval = null;
 let lastWorkflowDecision = null;
+let speechRecognizer = null;
+let azureSpeechTranscript = "";
 
 let agentHistory = [
   {
@@ -170,7 +178,7 @@ function applyDecisionAfterReflection(decision) {
   }
 
   if (decision.action === "hint_retry") {
-    transcriptBox.textContent = "Retry the same question and record your answer again.";
+    transcriptBox.textContent = "Retry the same question and answer again.";
     setQuestionStep("Retry");
     setAgentCurrent("WorkflowAgent allows one retry with a hint.");
     addAgentLog("WorkflowAgent", "Retry enabled", "You may retry this question once after reflection.", "waiting");
@@ -211,6 +219,7 @@ function resetAllUI() {
   currentQuestionIndex = 0;
   isRecording = false;
   lastWorkflowDecision = null;
+  azureSpeechTranscript = "";
   renderQuestionCard();
   resetEvaluationUI();
   clearReflectionTimer();
@@ -220,6 +229,26 @@ function resetAllUI() {
 function getCurrentQuestion() {
   if (!questions.length) return null;
   return questions[currentQuestionIndex];
+}
+
+function createSpeechRecognizer() {
+  if (!window.SpeechSDK) {
+    throw new Error("Azure Speech SDK is not loaded.");
+  }
+
+  if (!AZURE_SPEECH_KEY || !AZURE_SPEECH_REGION) {
+    throw new Error("Azure Speech key or region is missing.");
+  }
+
+  const speechConfig = SpeechSDK.SpeechConfig.fromSubscription(
+    AZURE_SPEECH_KEY,
+    AZURE_SPEECH_REGION
+  );
+  speechConfig.speechRecognitionLanguage = "en-US";
+
+  const audioConfig = SpeechSDK.AudioConfig.fromDefaultMicrophoneInput();
+
+  return new SpeechSDK.SpeechRecognizer(speechConfig, audioConfig);
 }
 
 async function evaluateAndDecide(transcript) {
@@ -468,36 +497,112 @@ nextQuestionBtn.addEventListener("click", () => {
   addAgentLog("WorkflowAgent", "Moved forward", "Loaded the next question.", "done");
 });
 
-startRecordBtn.addEventListener("click", () => {
+startRecordBtn.addEventListener("click", async () => {
   if (!questions.length) return;
 
-  isRecording = true;
-  clearReflectionTimer();
-  setGlobalStatus("running", "Recording");
-  setQuestionStep("Recording");
-  transcriptBox.textContent = "Recording in progress...";
-  openAgentBubble();
-  setAgentCurrent("Azure Speech is listening to your spoken answer.");
-  addAgentLog("Azure Speech", "Recording started", "Listening for your answer.", "running");
+  try {
+    if (speechRecognizer) {
+      speechRecognizer.close();
+      speechRecognizer = null;
+    }
+
+    azureSpeechTranscript = "";
+    speechRecognizer = createSpeechRecognizer();
+
+    speechRecognizer.recognizing = (_, event) => {
+      const partial = event.result?.text || "";
+      if (partial) {
+        transcriptBox.textContent = partial;
+        logDev(`Recognizing: ${partial}`);
+      }
+    };
+
+    speechRecognizer.recognized = (_, event) => {
+      const finalText = event.result?.text || "";
+      if (finalText) {
+        azureSpeechTranscript = finalText;
+        transcriptBox.textContent = finalText;
+        logDev(`Recognized: ${finalText}`);
+      }
+    };
+
+    speechRecognizer.canceled = (_, event) => {
+      logDev(`Speech canceled: ${event.errorDetails || event.reason}`);
+      setQuestionStep("Error");
+      setGlobalStatus("idle", "Error");
+      transcriptBox.textContent = `Speech canceled: ${event.errorDetails || event.reason}`;
+    };
+
+    speechRecognizer.sessionStarted = () => {
+      logDev("Azure Speech session started.");
+    };
+
+    speechRecognizer.sessionStopped = () => {
+      logDev("Azure Speech session stopped.");
+    };
+
+    isRecording = true;
+    clearReflectionTimer();
+    setGlobalStatus("running", "Recording");
+    setQuestionStep("Recording");
+    transcriptBox.textContent = "Listening...";
+    openAgentBubble();
+    setAgentCurrent("Azure Speech is listening to your spoken answer.");
+    addAgentLog("Azure Speech", "Recording started", "Listening for your answer.", "running");
+
+    speechRecognizer.startContinuousRecognitionAsync(
+      () => {
+        logDev("Continuous recognition started.");
+      },
+      (err) => {
+        logDev(`Speech start error: ${err}`);
+        transcriptBox.textContent = `Could not start speech recognition: ${err}`;
+        setQuestionStep("Error");
+        setGlobalStatus("idle", "Error");
+      }
+    );
+  } catch (error) {
+    logDev(`Microphone/Speech init error: ${error}`);
+    transcriptBox.textContent = `Could not initialize Azure Speech: ${error}`;
+    setQuestionStep("Error");
+    setGlobalStatus("idle", "Error");
+  }
 });
 
 stopRecordBtn.addEventListener("click", async () => {
-  if (!questions.length || !isRecording) return;
+  if (!questions.length || !isRecording || !speechRecognizer) return;
 
   isRecording = false;
   setGlobalStatus("running", "Transcribing");
   setQuestionStep("Transcribing");
   openAgentBubble();
-  setAgentCurrent("Azure Speech finished recording and is returning a transcript.");
+  setAgentCurrent("Azure Speech is finalizing your transcript.");
+  addAgentLog("Azure Speech", "Stopping recognition", "Finalizing transcript from microphone input.", "running");
+
+  await new Promise((resolve, reject) => {
+    speechRecognizer.stopContinuousRecognitionAsync(
+      () => resolve(),
+      (err) => reject(err)
+    );
+  }).catch((err) => {
+    logDev(`Speech stop error: ${err}`);
+    transcriptBox.textContent = `Could not stop speech recognition: ${err}`;
+    setQuestionStep("Error");
+    setGlobalStatus("idle", "Error");
+  });
+
+  if (!azureSpeechTranscript.trim()) {
+    transcriptBox.textContent = "No transcript returned.";
+    setQuestionStep("Error");
+    setGlobalStatus("idle", "Error");
+    addAgentLog("Azure Speech", "No transcript", "No recognized speech was returned.", "waiting");
+    return;
+  }
+
+  setAgentCurrent("Azure Speech finished transcription.");
   addAgentLog("Azure Speech", "Transcript ready", "The spoken answer was converted into text.", "done");
 
-  // Placeholder transcript before Azure Speech integration
-  const placeholderTranscript =
-    "inode stores metadata like permissions and size, while the filename is stored in the directory entry";
-
-  transcriptBox.textContent = placeholderTranscript;
-
-  await evaluateAndDecide(placeholderTranscript);
+  await evaluateAndDecide(azureSpeechTranscript);
 });
 
 resetAgentState();
