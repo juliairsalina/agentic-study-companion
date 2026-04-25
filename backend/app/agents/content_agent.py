@@ -1,8 +1,3 @@
-from app.config import settings
-
-print("FOUNDRY_PROJECT_ENDPOINT:", settings.FOUNDRY_PROJECT_ENDPOINT)
-print("FOUNDRY_MODEL:", settings.FOUNDRY_MODEL)
-
 from __future__ import annotations
 
 import json
@@ -12,6 +7,9 @@ from agent_framework.foundry import FoundryChatClient
 from azure.identity.aio import AzureCliCredential
 
 from app.config import settings
+
+print("FOUNDRY_PROJECT_ENDPOINT:", settings.FOUNDRY_PROJECT_ENDPOINT)
+print("FOUNDRY_MODEL:", settings.FOUNDRY_MODEL)
 
 
 class ContentAgent:

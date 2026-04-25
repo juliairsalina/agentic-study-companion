@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.routes.upload import router as upload_router
+from app.routes.evaluate import router as evaluate_router
 
 from app.config import settings
 
@@ -33,3 +34,4 @@ def health_check():
 
 
 app.include_router(upload_router)
+app.include_router(evaluate_router)
