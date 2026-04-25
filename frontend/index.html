@@ -3,515 +3,143 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Study Companion</title>
-  <style>
-    :root {
-      --bg: #f6f8fb;
-      --card: #ffffff;
-      --text: #1f2937;
-      --muted: #6b7280;
-      --primary: #2563eb;
-      --primary-dark: #1d4ed8;
-      --border: #e5e7eb;
-      --success: #166534;
-      --success-bg: #dcfce7;
-      --warning: #92400e;
-      --warning-bg: #fef3c7;
-      --danger: #991b1b;
-      --danger-bg: #fee2e2;
-      --shadow: 0 10px 25px rgba(0, 0, 0, 0.06);
-      --shadow-strong: 0 16px 40px rgba(0, 0, 0, 0.12);
-      --radius: 16px;
-    }
-
-    * {
-      box-sizing: border-box;
-    }
-
-    body {
-      margin: 0;
-      font-family: Arial, Helvetica, sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      line-height: 1.5;
-    }
-
-    .container {
-      max-width: 1100px;
-      margin: 0 auto;
-      padding: 24px;
-    }
-
-    .hero {
-      margin-bottom: 24px;
-    }
-
-    .hero h1 {
-      margin: 0 0 8px;
-      font-size: 2rem;
-    }
-
-    .hero p {
-      margin: 0;
-      color: var(--muted);
-      max-width: 700px;
-    }
-
-    .grid {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 20px;
-    }
-
-    .card {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-      padding: 20px;
-    }
-
-    .card h2 {
-      margin-top: 0;
-      margin-bottom: 12px;
-      font-size: 1.15rem;
-    }
-
-    .muted {
-      color: var(--muted);
-      font-size: 0.95rem;
-    }
-
-    .label {
-      display: block;
-      margin-bottom: 8px;
-      font-weight: 600;
-      font-size: 0.95rem;
-    }
-
-    input[type="file"],
-    textarea,
-    button {
-      font: inherit;
-    }
-
-    input[type="file"] {
-      width: 100%;
-      margin-bottom: 14px;
-    }
-
-    textarea {
-      width: 100%;
-      min-height: 90px;
-      resize: vertical;
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 12px;
-      outline: none;
-      background: #fff;
-    }
-
-    textarea:focus {
-      border-color: var(--primary);
-    }
-
-    .button-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-top: 14px;
-    }
-
-    button {
-      border: none;
-      border-radius: 10px;
-      padding: 10px 16px;
-      cursor: pointer;
-      font-weight: 600;
-      transition: 0.2s ease;
-    }
-
-    .btn-primary {
-      background: var(--primary);
-      color: white;
-    }
-
-    .btn-primary:hover {
-      background: var(--primary-dark);
-    }
-
-    .btn-secondary {
-      background: #eef2ff;
-      color: #1e3a8a;
-    }
-
-    .btn-secondary:hover {
-      background: #e0e7ff;
-    }
-
-    .box {
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 14px;
-      background: #fafafa;
-      min-height: 72px;
-      white-space: pre-wrap;
-    }
-
-    .question-list {
-      display: grid;
-      gap: 10px;
-      margin-top: 12px;
-    }
-
-    .question-item {
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 12px;
-      background: #fff;
-      cursor: pointer;
-    }
-
-    .question-item strong {
-      display: block;
-      margin-bottom: 6px;
-    }
-
-    .question-item.active {
-      border-color: var(--primary);
-      background: #eff6ff;
-    }
-
-    .status {
-      display: inline-block;
-      padding: 6px 10px;
-      border-radius: 999px;
-      font-size: 0.85rem;
-      font-weight: 700;
-      margin-bottom: 10px;
-    }
-
-    .status.good {
-      color: var(--success);
-      background: var(--success-bg);
-    }
-
-    .status.partial {
-      color: var(--warning);
-      background: var(--warning-bg);
-    }
-
-    .status.weak {
-      color: var(--danger);
-      background: var(--danger-bg);
-    }
-
-    .two-col {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 20px;
-    }
-
-    .small {
-      font-size: 0.9rem;
-    }
-
-    .footer-note {
-      margin-top: 8px;
-      color: var(--muted);
-      font-size: 0.9rem;
-    }
-
-    .agent-launcher {
-      position: fixed;
-      right: 22px;
-      bottom: 22px;
-      width: 68px;
-      height: 68px;
-      border-radius: 999px;
-      background: #ffffff;
-      border: 1px solid rgba(37, 99, 235, 0.18);
-      box-shadow: var(--shadow-strong);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 0;
-      z-index: 40;
-      overflow: hidden;
-    }
-
-    .agent-launcher img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: block;
-    }
-
-    .agent-launcher-fallback {
-      width: 100%;
-      height: 100%;
-      display: none;
-      align-items: center;
-      justify-content: center;
-      background: linear-gradient(135deg, #2563eb, #60a5fa);
-      color: white;
-      font-weight: 800;
-      font-size: 1.25rem;
-    }
-
-    .agent-launcher.has-fallback .agent-launcher-fallback {
-      display: flex;
-    }
-
-    .agent-bubble {
-      position: fixed;
-      right: 22px;
-      bottom: 102px;
-      width: min(360px, calc(100vw - 24px));
-      background: #ffffff;
-      border: 1px solid var(--border);
-      border-radius: 20px;
-      box-shadow: var(--shadow-strong);
-      padding: 16px;
-      z-index: 45;
-      transform: translateY(12px) scale(0.98);
-      opacity: 0;
-      pointer-events: none;
-      transition: 0.18s ease;
-    }
-
-    .agent-bubble.open {
-      transform: translateY(0) scale(1);
-      opacity: 1;
-      pointer-events: auto;
-    }
-
-    .agent-bubble-header {
-      display: flex;
-      align-items: flex-start;
-      justify-content: space-between;
-      gap: 12px;
-      margin-bottom: 12px;
-    }
-
-    .agent-bubble-title {
-      font-size: 1rem;
-      font-weight: 700;
-      margin: 0;
-    }
-
-    .agent-bubble-subtitle {
-      margin: 3px 0 0;
-      color: var(--muted);
-      font-size: 0.88rem;
-    }
-
-    .agent-close-btn {
-      background: #f3f4f6;
-      color: #374151;
-      min-width: 34px;
-      min-height: 34px;
-      padding: 0;
-      border-radius: 999px;
-      font-size: 1rem;
-    }
-
-    .agent-current {
-      border: 1px solid var(--border);
-      background: #f8fafc;
-      border-radius: 14px;
-      padding: 12px;
-      margin-bottom: 12px;
-    }
-
-    .agent-current-label {
-      color: var(--muted);
-      font-size: 0.8rem;
-      margin-bottom: 4px;
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
-    }
-
-    .agent-current-text {
-      font-weight: 600;
-    }
-
-    .agent-log {
-      display: grid;
-      gap: 8px;
-      max-height: 260px;
-      overflow-y: auto;
-      padding-right: 2px;
-    }
-
-    .agent-log-item {
-      display: flex;
-      gap: 10px;
-      align-items: flex-start;
-      padding: 10px 0;
-      border-bottom: 1px solid #f1f5f9;
-    }
-
-    .agent-log-item:last-child {
-      border-bottom: none;
-      padding-bottom: 0;
-    }
-
-    .agent-log-dot {
-      width: 10px;
-      height: 10px;
-      margin-top: 6px;
-      border-radius: 999px;
-      flex-shrink: 0;
-      background: #cbd5e1;
-    }
-
-    .agent-log-dot.done {
-      background: #16a34a;
-    }
-
-    .agent-log-dot.running {
-      background: #2563eb;
-      box-shadow: 0 0 0 6px rgba(37, 99, 235, 0.12);
-    }
-
-    .agent-log-dot.waiting {
-      background: #f59e0b;
-    }
-
-    @media (max-width: 860px) {
-      .two-col {
-        grid-template-columns: 1fr;
-      }
-
-      .container {
-        padding: 16px;
-      }
-
-      .hero h1 {
-        font-size: 1.6rem;
-      }
-
-      .agent-launcher {
-        right: 16px;
-        bottom: 16px;
-      }
-
-      .agent-bubble {
-        right: 12px;
-        bottom: 94px;
-      }
-    }
-  </style>
+  <title>Yapping Flashcard</title>
+  <link rel="stylesheet" href="./style.css" />
 </head>
 <body>
-  <div class="container">
-    <header class="hero">
-      <h1>Yapping Flashcard</h1>
-      <p>
-        Upload your lecture PDF, generate an AI summary and study questions, then answer by yapping and get feedback.
-      </p>
-    </header>
+  <div class="app-shell">
+    <main class="main-layout">
+      <header class="page-header">
+        <div>
+          <h1>Yapping Flashcard</h1>
+          <p class="page-subtitle">
+            Upload a lecture PDF, study one card at a time, speak your answer, and get guided feedback.
+          </p>
+        </div>
+        <div class="header-status">
+          <span id="globalStatusPill" class="status-pill idle">Idle</span>
+        </div>
+      </header>
 
-    <main class="grid">
-      <section class="card">
-        <h2>1. Upload Study Material</h2>
-        <p class="muted">Upload one lecture PDF and optionally tell the AI what kind of study help you want.</p>
+      <section class="panel upload-panel">
+        <div class="panel-header">
+          <h2>Upload PDF</h2>
+          <p>Start by uploading one lecture PDF and optionally add a study instruction.</p>
+        </div>
 
-        <label class="label" for="pdfFile">Lecture PDF</label>
+        <label class="field-label" for="pdfFile">Lecture PDF</label>
         <input type="file" id="pdfFile" accept=".pdf" />
 
-        <label class="label" for="instruction">Optional study instruction</label>
+        <label class="field-label" for="instruction">Optional study instruction</label>
         <textarea
           id="instruction"
-          placeholder="Example: focus on definitions, exam-style questions, hard questions only, summarize key concepts..."
+          placeholder="Example: focus on definitions, comparisons, and exam-style questions."
         ></textarea>
 
         <div class="button-row">
-          <button id="processBtn" class="btn-primary">Process PDF</button>
-          <button id="resetBtn" class="btn-secondary">Reset</button>
+          <button id="processBtn" class="btn btn-primary">Process PDF</button>
+          <button id="resetBtn" class="btn btn-secondary">Reset</button>
         </div>
 
-        <p class="footer-note" id="uploadStatus">No file uploaded yet.</p>
+        <p id="uploadStatus" class="helper-text">No file uploaded yet.</p>
       </section>
 
-      <section class="card">
-        <h2>2. AI Summary</h2>
-        <p class="muted">This section will display the generated summary from the uploaded PDF.</p>
-        <div id="summaryBox" class="box">Summary will appear here.</div>
-      </section>
-
-      <section class="card">
-        <h2>3. Generated Questions</h2>
-        <p class="muted">These are the study questions generated from your lecture material.</p>
-        <div id="questionList" class="question-list">
-          <div class="question-item">
-            <strong>Question list is empty.</strong>
-            <span class="small muted">Generated questions will appear here after processing the PDF.</span>
-          </div>
+      <section class="panel summary-panel">
+        <div class="panel-header">
+          <h2>AI Summary</h2>
+          <p>Exam-focused summary generated from the uploaded PDF.</p>
         </div>
+        <div id="summaryBox" class="content-box summary-box">Summary will appear here.</div>
       </section>
 
-      <section class="card">
-        <h2>4. Study Session</h2>
-        <div class="two-col">
+      <section class="panel question-panel">
+        <div class="panel-header">
           <div>
-            <p class="muted">Current question</p>
-            <div id="currentQuestion" class="box">
-              Select a generated question to start studying.
-            </div>
-
-            <div class="button-row">
-              <button id="prevQuestionBtn" class="btn-secondary">Previous</button>
-              <button id="nextQuestionBtn" class="btn-secondary">Next</button>
-            </div>
+            <h2>Question Card</h2>
+            <p>Focus on one question at a time.</p>
           </div>
+          <div id="questionCounter" class="question-counter">0 / 0</div>
+        </div>
 
-          <div>
-            <p class="muted">Spoken answer</p>
-            <div class="button-row">
-              <button id="startRecordBtn" class="btn-primary">Start Recording</button>
-              <button id="stopRecordBtn" class="btn-secondary">Stop Recording</button>
+        <div class="carousel-shell">
+          <button id="prevQuestionBtn" class="nav-btn" aria-label="Previous question">‹</button>
+
+          <article class="study-card">
+            <div class="card-meta">
+              <span id="questionTopic" class="topic-badge">No topic</span>
+              <span id="questionStep" class="step-badge">Waiting</span>
             </div>
 
-            <p class="footer-note">
-              For now, this is UI only. Later, connect it to Azure Speech-to-Text.
-            </p>
-          </div>
+            <div id="currentQuestion" class="question-text">
+              Upload a PDF to generate your first question.
+            </div>
+          </article>
+
+          <button id="nextQuestionBtn" class="nav-btn" aria-label="Next question">›</button>
         </div>
       </section>
 
-      <section class="card">
-        <h2>5. Transcript</h2>
-        <p class="muted">The speech-to-text result will appear here.</p>
-        <div id="transcriptBox" class="box">Transcript will appear here.</div>
-      </section>
-
-      <section class="card">
-        <h2>6. Evaluation</h2>
-        <p class="muted">The evaluation agent will check the answer and recommend the next step.</p>
-
-        <div id="statusBadge" class="status partial">Waiting for evaluation</div>
-
-        <div class="two-col">
-          <div>
-            <label class="label">Score / Decision</label>
-            <div id="scoreBox" class="box">Score and decision will appear here.</div>
-          </div>
-
-          <div>
-            <label class="label">Feedback / Hint</label>
-            <div id="feedbackBox" class="box">Feedback and hint will appear here.</div>
-          </div>
+      <section class="panel session-panel">
+        <div class="panel-header">
+          <h2>Study Session</h2>
+          <p>
+            Record your spoken answer. After stopping, transcript and evaluation will run automatically.
+          </p>
         </div>
 
         <div class="button-row">
-          <button id="evaluateBtn" class="btn-primary">Evaluate Answer</button>
-          <button id="retryBtn" class="btn-secondary">Retry Question</button>
-          <button id="moveNextBtn" class="btn-secondary">Move to Next</button>
+          <button id="startRecordBtn" class="btn btn-primary">Start Recording</button>
+          <button id="stopRecordBtn" class="btn btn-secondary">Stop Recording</button>
+        </div>
+
+        <div class="status-stack">
+          <div>
+            <div class="mini-label">Agent step</div>
+            <div id="inlineAgentStep" class="inline-step">Waiting for your PDF.</div>
+          </div>
+          <div>
+            <div class="mini-label">Reflection timer</div>
+            <div id="reflectionTimer" class="inline-step">Not started</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel transcript-panel">
+        <div class="panel-header">
+          <h2>Transcript</h2>
+          <p>Appears right after recording stops.</p>
+        </div>
+        <div id="transcriptBox" class="content-box">Transcript will appear here.</div>
+      </section>
+
+      <section class="panel evaluation-panel">
+        <div class="panel-header">
+          <h2>Evaluation</h2>
+          <p>Auto-generated after transcript is ready.</p>
+        </div>
+
+        <div id="statusBadge" class="status-chip neutral">Waiting for evaluation</div>
+
+        <div class="evaluation-grid">
+          <div>
+            <div class="mini-label">Score / decision</div>
+            <div id="scoreBox" class="content-box compact-box">Score and decision will appear here.</div>
+          </div>
+          <div>
+            <div class="mini-label">Feedback</div>
+            <div id="feedbackBox" class="content-box compact-box">Feedback and hint will appear here.</div>
+          </div>
         </div>
       </section>
     </main>
+
+    <aside class="dev-log-panel">
+      <div class="dev-log-header">
+        <h3>Debug Log</h3>
+        <span>Right below</span>
+      </div>
+      <div id="devLogBox" class="dev-log-box"></div>
+    </aside>
   </div>
 
   <button id="agentLauncher" class="agent-launcher" aria-label="Open agent activity">
@@ -523,7 +151,7 @@
     <div class="agent-bubble-header">
       <div>
         <h3 class="agent-bubble-title">Agent Activity</h3>
-        <p class="agent-bubble-subtitle">See what the AI agents are doing in real time.</p>
+        <p class="agent-bubble-subtitle">Live execution feedback for every agent step.</p>
       </div>
       <button id="agentCloseBtn" class="agent-close-btn" aria-label="Close agent activity">×</button>
     </div>
@@ -536,463 +164,6 @@
     <div id="agentLog" class="agent-log"></div>
   </aside>
 
-  <script>
-    const pdfFile = document.getElementById("pdfFile");
-    const instruction = document.getElementById("instruction");
-    const processBtn = document.getElementById("processBtn");
-    const resetBtn = document.getElementById("resetBtn");
-
-    const uploadStatus = document.getElementById("uploadStatus");
-    const summaryBox = document.getElementById("summaryBox");
-    const questionList = document.getElementById("questionList");
-    const currentQuestion = document.getElementById("currentQuestion");
-
-    const transcriptBox = document.getElementById("transcriptBox");
-    const statusBadge = document.getElementById("statusBadge");
-    const scoreBox = document.getElementById("scoreBox");
-    const feedbackBox = document.getElementById("feedbackBox");
-
-    const prevQuestionBtn = document.getElementById("prevQuestionBtn");
-    const nextQuestionBtn = document.getElementById("nextQuestionBtn");
-    const startRecordBtn = document.getElementById("startRecordBtn");
-    const stopRecordBtn = document.getElementById("stopRecordBtn");
-    const evaluateBtn = document.getElementById("evaluateBtn");
-    const retryBtn = document.getElementById("retryBtn");
-    const moveNextBtn = document.getElementById("moveNextBtn");
-
-    const agentLauncher = document.getElementById("agentLauncher");
-    const agentBubble = document.getElementById("agentBubble");
-    const agentCloseBtn = document.getElementById("agentCloseBtn");
-    const agentCurrentText = document.getElementById("agentCurrentText");
-    const agentLog = document.getElementById("agentLog");
-    const agentLogo = document.getElementById("agentLogo");
-
-    let questions = [];
-    let currentQuestionIndex = 0;
-    let agentHistory = [
-      {
-        agent: "WorkflowAgent",
-        title: "Ready",
-        message: "Waiting for your PDF upload.",
-        status: "waiting"
-      }
-    ];
-
-    function renderQuestions() {
-      questionList.innerHTML = "";
-
-      if (questions.length === 0) {
-        questionList.innerHTML = `
-          <div class="question-item">
-            <strong>Question list is empty.</strong>
-            <span class="small muted">Generated questions will appear here after processing the PDF.</span>
-          </div>
-        `;
-        currentQuestion.textContent = "Select a generated question to start studying.";
-        return;
-      }
-
-      questions.forEach((q, index) => {
-        const item = document.createElement("div");
-        item.className = "question-item" + (index === currentQuestionIndex ? " active" : "");
-        item.innerHTML = `
-          <strong>Question ${index + 1}</strong>
-          <span>${q.question}</span>
-        `;
-        item.addEventListener("click", () => {
-          currentQuestionIndex = index;
-          updateCurrentQuestion();
-          renderQuestions();
-          openAgentBubble();
-          setAgentCurrent("WorkflowAgent is showing a different generated question.");
-          addAgentLog("WorkflowAgent", "Question selected", `Loaded question ${index + 1} for study.`, "done");
-        });
-        questionList.appendChild(item);
-      });
-
-      updateCurrentQuestion();
-    }
-
-    function updateCurrentQuestion() {
-      if (questions.length === 0) {
-        currentQuestion.textContent = "Select a generated question to start studying.";
-        return;
-      }
-
-      currentQuestion.textContent = questions[currentQuestionIndex].question;
-    }
-
-    function resetEvaluationUI() {
-      statusBadge.textContent = "Waiting for evaluation";
-      statusBadge.className = "status partial";
-      scoreBox.textContent = "Score and decision will appear here.";
-      feedbackBox.textContent = "Feedback and hint will appear here.";
-    }
-
-    function setAgentCurrent(message) {
-      agentCurrentText.textContent = message;
-      console.log("[Agent Current]", message);
-    }
-
-    function renderAgentLog() {
-      agentLog.innerHTML = "";
-      const displayItems = agentHistory.slice().reverse();
-
-      displayItems.forEach((entry) => {
-        const item = document.createElement("div");
-        item.className = "agent-log-item";
-        item.innerHTML = `
-          <div class="agent-log-dot ${entry.status}"></div>
-          <div>
-            <div style="font-size:0.92rem;font-weight:700;margin-bottom:2px;">${entry.agent}: ${entry.title}</div>
-            <div style="color:#6b7280;font-size:0.88rem;">${entry.message}</div>
-          </div>
-        `;
-        agentLog.appendChild(item);
-      });
-    }
-
-    function addAgentLog(agent, title, message, status = "done") {
-      const entry = { agent, title, message, status };
-      agentHistory.push(entry);
-      if (agentHistory.length > 12) {
-        agentHistory = agentHistory.slice(agentHistory.length - 12);
-      }
-      renderAgentLog();
-      console.log(`[${agent}] ${title} - ${message}`);
-    }
-
-    function openAgentBubble() {
-      agentBubble.classList.add("open");
-    }
-
-    function closeAgentBubble() {
-      agentBubble.classList.remove("open");
-    }
-
-    function resetAgentState() {
-      agentHistory = [
-        {
-          agent: "WorkflowAgent",
-          title: "Ready",
-          message: "Waiting for your PDF upload.",
-          status: "waiting"
-        }
-      ];
-      setAgentCurrent("Idle. Waiting for your PDF.");
-      renderAgentLog();
-    }
-
-    agentLauncher.addEventListener("click", () => {
-      agentBubble.classList.toggle("open");
-    });
-
-    agentCloseBtn.addEventListener("click", () => {
-      closeAgentBubble();
-    });
-
-    document.addEventListener("click", (event) => {
-      const clickedInsideBubble = agentBubble.contains(event.target);
-      const clickedLauncher = agentLauncher.contains(event.target);
-      if (!clickedInsideBubble && !clickedLauncher) {
-        closeAgentBubble();
-      }
-    });
-
-    agentLogo.addEventListener("error", () => {
-      agentLauncher.classList.add("has-fallback");
-      agentLogo.style.display = "none";
-    });
-
-    processBtn.addEventListener("click", async () => {
-      const file = pdfFile.files[0];
-
-      if (!file) {
-        uploadStatus.textContent = "Please upload a PDF first.";
-        openAgentBubble();
-        setAgentCurrent("No PDF selected.");
-        addAgentLog("WorkflowAgent", "Upload blocked", "Please choose a PDF first.", "waiting");
-        return;
-      }
-
-      if (!file.name.toLowerCase().endsWith(".pdf")) {
-        uploadStatus.textContent = "Only PDF files are allowed.";
-        openAgentBubble();
-        setAgentCurrent("Invalid file type.");
-        addAgentLog("WorkflowAgent", "Upload blocked", "Only PDF files are allowed.", "waiting");
-        return;
-      }
-
-      processBtn.disabled = true;
-      processBtn.textContent = "Processing...";
-      uploadStatus.textContent = "Uploading PDF...";
-      summaryBox.textContent = "Waiting for backend response...";
-      transcriptBox.textContent = "Transcript will appear here.";
-      questions = [];
-      currentQuestionIndex = 0;
-      renderQuestions();
-      resetEvaluationUI();
-
-      openAgentBubble();
-      resetAgentState();
-      setAgentCurrent("WorkflowAgent is starting your study session.");
-      addAgentLog("WorkflowAgent", "Session started", `Received file: ${file.name}`, "running");
-
-      const formData = new FormData();
-      formData.append("pdf", file);
-      formData.append("instruction", instruction.value || "");
-
-      const step1 = setTimeout(() => {
-        setAgentCurrent("WorkflowAgent is saving your PDF.");
-        addAgentLog("WorkflowAgent", "Saving PDF", "Storing uploaded file locally.", "running");
-      }, 300);
-
-      const step2 = setTimeout(() => {
-        setAgentCurrent("WorkflowAgent is extracting text from your PDF.");
-        addAgentLog("WorkflowAgent", "Extracting content", "Reading lecture text page by page.", "running");
-      }, 900);
-
-      try {
-        const response = await fetch("http://127.0.0.1:8000/upload/", {
-          method: "POST",
-          body: formData
-        });
-
-        clearTimeout(step1);
-        clearTimeout(step2);
-
-        const result = await response.json();
-
-        if (!response.ok) {
-          uploadStatus.textContent = result.detail || "Upload failed.";
-          summaryBox.textContent = "Upload failed.";
-          setAgentCurrent("Upload failed.");
-          addAgentLog("WorkflowAgent", "Upload failed", result.detail || "Unknown error.", "waiting");
-          return;
-        }
-
-        uploadStatus.textContent = `Uploaded successfully: ${result.filename}`;
-        summaryBox.textContent = result.summary || "Summary generation failed.";
-
-        questions = Array.isArray(result.questions) ? result.questions : [];
-        currentQuestionIndex = 0;
-        renderQuestions();
-
-        setAgentCurrent("ContentAgent finished summary and question generation.");
-        addAgentLog("ContentAgent", "Summary ready", "AI summary generated from extracted lecture text.", "done");
-        addAgentLog(
-          "ContentAgent",
-          "Questions ready",
-          `Generated ${questions.length} study question(s).`,
-          "done"
-        );
-
-        console.log("Returned questions:", result.questions);
-        console.log("Question count:", result.questions?.length);
-
-      } catch (error) {
-        console.error("Upload error:", error);
-        uploadStatus.textContent = "Could not connect to backend.";
-        summaryBox.textContent = "Connection to backend failed.";
-        setAgentCurrent("Backend connection failed.");
-        addAgentLog("WorkflowAgent", "Connection error", "Could not reach backend API.", "waiting");
-      } finally {
-        processBtn.disabled = false;
-        processBtn.textContent = "Process PDF";
-      }
-    });
-
-    resetBtn.addEventListener("click", () => {
-      pdfFile.value = "";
-      instruction.value = "";
-      uploadStatus.textContent = "No file uploaded yet.";
-      summaryBox.textContent = "Summary will appear here.";
-      questions = [];
-      currentQuestionIndex = 0;
-      renderQuestions();
-      transcriptBox.textContent = "Transcript will appear here.";
-      resetEvaluationUI();
-      resetAgentState();
-    });
-
-    prevQuestionBtn.addEventListener("click", () => {
-      if (questions.length === 0) return;
-      currentQuestionIndex = (currentQuestionIndex - 1 + questions.length) % questions.length;
-      updateCurrentQuestion();
-      renderQuestions();
-      openAgentBubble();
-      setAgentCurrent("WorkflowAgent moved to the previous question.");
-      addAgentLog("WorkflowAgent", "Moved backward", "Loaded the previous question.", "done");
-    });
-
-    nextQuestionBtn.addEventListener("click", () => {
-      if (questions.length === 0) return;
-      currentQuestionIndex = (currentQuestionIndex + 1) % questions.length;
-      updateCurrentQuestion();
-      renderQuestions();
-      openAgentBubble();
-      setAgentCurrent("WorkflowAgent moved to the next question.");
-      addAgentLog("WorkflowAgent", "Moved forward", "Loaded the next question.", "done");
-    });
-
-    startRecordBtn.addEventListener("click", () => {
-      transcriptBox.textContent = "Recording started... (UI placeholder)";
-      openAgentBubble();
-      setAgentCurrent("Azure Speech is listening to your spoken answer.");
-      addAgentLog("WorkflowAgent", "Recording started", "The study session is now listening for your answer.", "running");
-    });
-
-    stopRecordBtn.addEventListener("click", () => {
-      transcriptBox.textContent =
-        "inode stores metadata like permissions and size, while the filename is stored in the directory entry";
-      openAgentBubble();
-      setAgentCurrent("Azure Speech finished transcription.");
-      addAgentLog("Azure Speech", "Transcript ready", "The spoken answer was converted into text.", "done");
-    });
-
-    evaluateBtn.addEventListener("click", async () => {
-      if (questions.length === 0) return;
-
-      const current = questions[currentQuestionIndex];
-      const transcript = transcriptBox.textContent.trim();
-
-      if (!transcript || transcript === "Transcript will appear here.") {
-        feedbackBox.textContent = "No transcript available yet.";
-        return;
-      }
-
-      openAgentBubble();
-      setAgentCurrent("CoachAgent is evaluating your answer.");
-      addAgentLog("CoachAgent", "Evaluating answer", "Checking concept coverage against the expected answer.", "running");
-
-      const coachPayload = {
-        questionId: current.id,
-        topic: current.topic,
-        question: current.question,
-        transcript: transcript,
-        idealAnswer: current.idealAnswer,
-        keywords: current.keywords || [],
-        sourceChunkIds: current.sourceChunkIds || []
-      };
-
-      try {
-        // 1. Call CoachAgent
-        const coachResponse = await fetch("http://127.0.0.1:8000/evaluate/", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify(coachPayload)
-        });
-
-        const coachResult = await coachResponse.json();
-
-        if (!coachResponse.ok) {
-          feedbackBox.textContent = coachResult.detail || "Evaluation failed.";
-          setAgentCurrent("CoachAgent evaluation failed.");
-          addAgentLog("CoachAgent", "Evaluation failed", coachResult.detail || "Unknown error.", "waiting");
-          return;
-        }
-
-        setAgentCurrent("WorkflowAgent is deciding the next step.");
-        addAgentLog("WorkflowAgent", "Decision in progress", "Reading evaluation result and choosing the next action.", "running");
-
-        // 2. Call WorkflowAgent
-        const workflowPayload = {
-          question: current,
-          coachResult: coachResult
-        };
-
-        const workflowResponse = await fetch("http://127.0.0.1:8000/workflow/decide", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify(workflowPayload)
-        });
-
-        const workflowResult = await workflowResponse.json();
-
-        if (!workflowResponse.ok) {
-          feedbackBox.textContent = workflowResult.detail || "Workflow decision failed.";
-          setAgentCurrent("WorkflowAgent decision failed.");
-          addAgentLog("WorkflowAgent", "Decision failed", workflowResult.detail || "Unknown error.", "waiting");
-          return;
-        }
-
-        const decision = workflowResult.decision;
-
-        // 3. Show coach result
-        statusBadge.textContent = decision.action;
-        statusBadge.className =
-          decision.action === "advance"
-            ? "status good"
-            : decision.action === "hint_retry"
-            ? "status partial"
-            : "status weak";
-
-        scoreBox.textContent =
-          `Score: ${coachResult.score}\nRecommendation: ${coachResult.recommendation}`;
-
-        feedbackBox.textContent =
-          `${coachResult.feedback}\n\nMissing concepts: ${(coachResult.missingConcepts || []).join(", ")}\n\nNext step: ${decision.messageToUser}`;
-
-        // 4. Apply workflow decision to UI
-        setAgentCurrent(`WorkflowAgent decided: ${decision.action}`);
-        addAgentLog("WorkflowAgent", "Decision complete", decision.messageToUser, "done");
-
-        console.log("CoachAgent result:", coachResult);
-        console.log("WorkflowAgent result:", workflowResult);
-
-        if (decision.action === "hint_retry") {
-          transcriptBox.textContent = "Retry the same question and answer again.";
-        }
-
-        if (decision.action === "advance") {
-          if (currentQuestionIndex < questions.length - 1) {
-            currentQuestionIndex += 1;
-            updateCurrentQuestion();
-            renderQuestions();
-          }
-        }
-
-        if (decision.action === "reveal_and_move") {
-          if (currentQuestionIndex < questions.length - 1) {
-            currentQuestionIndex += 1;
-            updateCurrentQuestion();
-            renderQuestions();
-          }
-        }
-      } catch (error) {
-        console.error("Evaluate/Workflow error:", error);
-        feedbackBox.textContent = "Could not connect to backend.";
-        setAgentCurrent("Backend connection failed.");
-        addAgentLog("WorkflowAgent", "Connection error", "Could not reach evaluation or workflow endpoint.", "waiting");
-      }
-    });
-
-    retryBtn.addEventListener("click", () => {
-      transcriptBox.textContent = "Retry the same question and record your answer again.";
-      resetEvaluationUI();
-      openAgentBubble();
-      setAgentCurrent("WorkflowAgent reset the current question for one more attempt.");
-      addAgentLog("WorkflowAgent", "Retry enabled", "You can answer the same question again with the hint in mind.", "waiting");
-    });
-
-    moveNextBtn.addEventListener("click", () => {
-      if (questions.length === 0) return;
-      currentQuestionIndex = (currentQuestionIndex + 1) % questions.length;
-      updateCurrentQuestion();
-      renderQuestions();
-      transcriptBox.textContent = "Transcript will appear here.";
-      resetEvaluationUI();
-      openAgentBubble();
-      setAgentCurrent("WorkflowAgent advanced to the next question.");
-      addAgentLog("WorkflowAgent", "Moved forward", "Loaded the next question for continued study.", "done");
-    });
-
-    resetAgentState();
-    renderQuestions();
-  </script>
+  <script src="./script.js"></script>
 </body>
 </html>
