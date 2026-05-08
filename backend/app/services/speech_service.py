@@ -1,5 +1,6 @@
 import os
 import tempfile
+import threading
 from typing import Any
 
 import azure.cognitiveservices.speech as speechsdk
@@ -23,41 +24,75 @@ def transcribe_audio_file(audio_bytes: bytes, file_suffix: str = ".wav") -> dict
 
     try:
         audio_config = speechsdk.audio.AudioConfig(filename=temp_audio_path)
+
         recognizer = speechsdk.SpeechRecognizer(
             speech_config=speech_config,
             audio_config=audio_config,
         )
 
-        result = recognizer.start_continuous_recognition()
+        done = threading.Event()
+        transcripts: list[str] = []
+        error_holder: list[str] = []
 
-        if result.reason == speechsdk.ResultReason.RecognizedSpeech:
-            json_result = result.properties.get(
-                speechsdk.PropertyId.SpeechServiceResponse_JsonResult
+        def recognized_handler(event):
+            if event.result.reason == speechsdk.ResultReason.RecognizedSpeech:
+                text = event.result.text.strip()
+                if text:
+                    print(f"Recognized: {text}")
+                    transcripts.append(text)
+
+            elif event.result.reason == speechsdk.ResultReason.NoMatch:
+                print("No speech could be recognized for this segment.")
+
+        def canceled_handler(event):
+            cancellation = event.result.cancellation_details
+
+            print(
+                f"Speech recognition canceled: "
+                f"{cancellation.reason} - {cancellation.error_details}"
             )
 
-            return {
-                "transcript": result.text,
-                "confidence": None,
-                "raw": json_result,
-            }
+            # EndOfStream simply means Azure finished reading the uploaded audio file.
+            # For file-based transcription, this is expected and should not be treated as an error.
+            if cancellation.reason == speechsdk.CancellationReason.EndOfStream:
+                done.set()
+                return
 
-        if result.reason == speechsdk.ResultReason.NoMatch:
-            return {
-                "transcript": "",
-                "confidence": None,
-                "raw": "No speech could be recognized.",
-            }
-
-        if result.reason == speechsdk.ResultReason.Canceled:
-            cancellation = result.cancellation_details
-            raise RuntimeError(
-                f"Speech recognition canceled: {cancellation.reason} - {cancellation.error_details}"
+            error_message = (
+                f"Speech recognition canceled: "
+                f"{cancellation.reason} - {cancellation.error_details}"
             )
+
+            error_holder.append(error_message)
+            done.set()
+
+        def session_stopped_handler(event):
+            print("Speech recognition session stopped.")
+            done.set()
+
+        recognizer.recognized.connect(recognized_handler)
+        recognizer.canceled.connect(canceled_handler)
+        recognizer.session_stopped.connect(session_stopped_handler)
+
+        recognizer.start_continuous_recognition()
+
+        # Wait until Azure finishes reading the uploaded audio file.
+        done.wait(timeout=120)
+
+        recognizer.stop_continuous_recognition()
+
+        if error_holder:
+            raise RuntimeError(error_holder[0])
+
+        final_transcript = " ".join(transcripts).strip()
 
         return {
-            "transcript": "",
+            "transcript": final_transcript,
             "confidence": None,
-            "raw": "Unknown speech recognition result.",
+            "raw": {
+                "segments": transcripts,
+                "segment_count": len(transcripts),
+            },
         }
 
     finally:
