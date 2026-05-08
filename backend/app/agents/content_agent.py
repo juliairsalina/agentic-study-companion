@@ -46,6 +46,7 @@ class ContentAgent:
                 "- Avoid duplicate questions.\n"
                 "- Base every question only on the provided lecture text.\n"
                 "- Do not invent facts or use outside knowledge.\n\n"
+                "- Use the language of the extracted lecture text to create the return value.\n\n"
 
                 "For each question, return:\n"
                 "- id\n"
