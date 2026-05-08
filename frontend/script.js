@@ -34,8 +34,8 @@ function App() {
     }
   });
 
-  const speechRecognizerRef = useRef(null);
-  const finalTranscriptRef = useRef("");
+  const mediaRecorderRef = useRef(null);
+  const audioChunksRef = useRef([]);
 
   const currentQuestion = questions[currentIndex];
 
@@ -219,94 +219,89 @@ function App() {
     }
   }
 
-  function createSpeechRecognizer() {
-    if (!window.SpeechSDK) {
-      throw new Error("Azure Speech SDK is not loaded.");
-    }
-
-    const speechKey = window.APP_CONFIG?.AZURE_SPEECH_KEY || "";
-    const speechRegion = window.APP_CONFIG?.AZURE_SPEECH_REGION || "";
-
-    if (!speechKey || !speechRegion) {
-      throw new Error(
-        "Azure Speech key/region is missing. For now, type your transcript manually in the textbox."
-      );
-    }
-
-    const speechConfig = SpeechSDK.SpeechConfig.fromSubscription(speechKey, speechRegion);
-    speechConfig.speechRecognitionLanguage = "en-US";
-
-    const audioConfig = SpeechSDK.AudioConfig.fromDefaultMicrophoneInput();
-    return new SpeechSDK.SpeechRecognizer(speechConfig, audioConfig);
-  }
-
-  function startRecording() {
+  async function startRecording() {
     if (!currentQuestion) return;
 
     try {
-      finalTranscriptRef.current = "";
-      setListeningText("agent is listening to your yap...");
-      setManualTranscript("");
-      setIsRecording(true);
+      audioChunksRef.current = [];
 
-      const recognizer = createSpeechRecognizer();
-      speechRecognizerRef.current = recognizer;
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
 
-      recognizer.recognizing = (_, event) => {
-        const partial = event.result?.text || "";
-        if (partial) {
-          setListeningText(partial);
+      const mediaRecorder = new MediaRecorder(stream, {
+        mimeType: "audio/webm"
+      });
+
+      mediaRecorderRef.current = mediaRecorder;
+
+      mediaRecorder.ondataavailable = (event) => {
+        if (event.data && event.data.size > 0) {
+          audioChunksRef.current.push(event.data);
         }
       };
 
-      recognizer.recognized = (_, event) => {
-        const text = event.result?.text || "";
-        if (text) {
-          finalTranscriptRef.current += ` ${text}`;
-          setManualTranscript(finalTranscriptRef.current.trim());
-        }
+      mediaRecorder.onstart = () => {
+        setIsRecording(true);
+        setListeningText("agent is listening to your yap...");
+        setManualTranscript("");
       };
 
-      recognizer.canceled = (_, event) => {
-        console.error("Speech canceled:", event);
-        setListeningText("Speech recognition stopped or failed.");
-        setIsRecording(false);
-      };
-
-      recognizer.startContinuousRecognitionAsync(
-        () => console.log("Recording started"),
-        (error) => {
-          console.error(error);
-          setListeningText("Could not start recording. You can type your transcript manually.");
-          setIsRecording(false);
-        }
-      );
+      mediaRecorder.start();
     } catch (error) {
       console.error(error);
-      setListeningText(error.message);
+      setListeningText("Could not access microphone. Please allow microphone permission.");
       setIsRecording(false);
     }
-  }
+}
 
-  function stopRecording() {
-    const recognizer = speechRecognizerRef.current;
+  async function stopRecording() {
+    const mediaRecorder = mediaRecorderRef.current;
 
+    if (!mediaRecorder) {
+      setIsRecording(false);
+      return;
+    }
+
+    setListeningText("Recording stopped. Sending audio to backend...");
     setIsRecording(false);
-    setListeningText("Recording stopped.");
 
-    if (!recognizer) return;
+    mediaRecorder.onstop = async () => {
+      try {
+        const audioBlob = new Blob(audioChunksRef.current, {
+          type: "audio/webm"
+        });
 
-    recognizer.stopContinuousRecognitionAsync(
-      () => {
-        recognizer.close();
-        speechRecognizerRef.current = null;
-      },
-      (error) => {
+        const formData = new FormData();
+        formData.append("audio", audioBlob, "answer.webm");
+
+        const response = await fetch(`${BACKEND_BASE}/study/transcribe`, {
+          method: "POST",
+          body: formData
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+          throw new Error(result.detail || "Transcription failed.");
+        }
+
+        setManualTranscript(result.transcript || "");
+        setListeningText("Transcript ready.");
+      } catch (error) {
         console.error(error);
-        setListeningText("Could not stop recording correctly.");
+        setListeningText(`Transcription error: ${error.message}`);
+      } finally {
+        audioChunksRef.current = [];
+
+        if (mediaRecorder.stream) {
+          mediaRecorder.stream.getTracks().forEach((track) => track.stop());
+        }
+
+        mediaRecorderRef.current = null;
       }
-    );
-  }
+    };
+
+    mediaRecorder.stop();
+}
 
   async function evaluateCurrentAnswer() {
     if (!currentQuestion) return;
