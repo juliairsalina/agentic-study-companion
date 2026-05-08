@@ -448,7 +448,7 @@ function UploadPage({
             <input
               value={instruction}
               onChange={(event) => setInstruction(event.target.value)}
-              placeholder="Optional instruction: focus on exam-style questions..."
+              placeholder="Write optional instruction: focus on exam-style questions..."
             />
 
             <button onClick={handleUpload} disabled={isUploading}>
