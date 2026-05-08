@@ -27,7 +27,7 @@ class ContentAgent:
             instructions=(
                 "You are ContentAgent, an AI study assistant for lecture PDFs. "
                 "Read extracted lecture text and return:\n"
-                "1. a concise exam-focused summary\n"
+                "1. a concise exam-focused summary in the lecture text's language\n"
                 "2. a list of important topics\n"
                 "3. exactly 10 structured study questions\n\n"
 

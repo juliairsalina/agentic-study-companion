@@ -7,3 +7,4 @@ agent-framework
 agent-framework-openai
 azure-identity
 azure-cognitiveservices-speech
+azure-cosmos
