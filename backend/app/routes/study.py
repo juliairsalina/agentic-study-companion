@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from fastapi import APIRouter, UploadFile, File, HTTPException
 
 from app.services.speech_service import transcribe_audio_file
@@ -16,8 +18,10 @@ async def transcribe_audio(audio: UploadFile = File(...)):
     if not audio_bytes:
         raise HTTPException(status_code=400, detail="Uploaded audio file is empty.")
 
+    file_suffix = Path(audio.filename).suffix or ".wav"
+
     try:
-        result = transcribe_audio_file(audio_bytes, file_suffix=".webm")
+        result = transcribe_audio_file(audio_bytes, file_suffix=file_suffix)
         return result
     except Exception as e:
         print(f"Speech transcription failed: {e}")
@@ -26,14 +30,9 @@ async def transcribe_audio(audio: UploadFile = File(...)):
 
 @router.get("/sessions")
 async def get_saved_sessions():
-    """
-    Used by frontend old flashcards section.
-    """
     try:
         sessions = list_study_sessions(user_id="demo-user")
-        return {
-            "sessions": sessions
-        }
+        return {"sessions": sessions}
     except Exception as e:
         print(f"Failed to load study sessions: {e}")
         raise HTTPException(status_code=500, detail=f"Failed to load study sessions: {str(e)}")
@@ -41,14 +40,8 @@ async def get_saved_sessions():
 
 @router.get("/sessions/{session_id}")
 async def get_saved_session(session_id: str):
-    """
-    Used when user opens one old flashcard session.
-    """
     try:
-        session = get_study_session(
-            session_id=session_id,
-            user_id="demo-user",
-        )
+        session = get_study_session(session_id=session_id, user_id="demo-user")
         return session
     except Exception as e:
         print(f"Failed to load study session: {e}")
