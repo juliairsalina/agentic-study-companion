@@ -3,6 +3,7 @@ from fastapi import APIRouter, UploadFile, File, Form, HTTPException
 from app.services.storage_service import save_uploaded_file
 from app.services.pdf_service import extract_text_from_pdf
 from app.agents.content_agent import ContentAgent
+from app.database import create_study_session
 
 router = APIRouter(prefix="/upload", tags=["upload"])
 
@@ -49,6 +50,7 @@ async def upload_pdf(
             "summary": "No readable text could be extracted from this PDF.",
             "topics": [],
             "questions": [],
+            "sessionId": None,
         }
 
     try:
@@ -63,17 +65,39 @@ async def upload_pdf(
         print(f"ContentAgent failed: {e}")
         raise HTTPException(status_code=500, detail=f"ContentAgent failed: {str(e)}")
 
+    summary = agent_result.get("summary", "")
+    topics = agent_result.get("topics", [])
+    questions = agent_result.get("questions", [])
+
+    try:
+        print("Saving study session to Cosmos DB...")
+        session_doc = create_study_session(
+            filename=pdf.filename,
+            instruction=instruction,
+            saved_path=saved_path,
+            extracted_text=extracted_text,
+            summary=summary,
+            topics=topics,
+            questions=questions,
+            user_id="demo-user",
+        )
+        print(f"Saved session ID: {session_doc['id']}")
+    except Exception as e:
+        print(f"Cosmos DB save failed: {e}")
+        raise HTTPException(status_code=500, detail=f"Cosmos DB save failed: {str(e)}")
+
     print("=== UPLOAD END ===\n")
 
     return {
         "message": "PDF uploaded and processed successfully",
+        "sessionId": session_doc["id"],
         "filename": pdf.filename,
         "instruction": instruction,
         "saved_path": saved_path,
         "text_preview": extracted_text[:1500],
         "extracted_text": extracted_text,
         "text_length": len(extracted_text),
-        "summary": agent_result.get("summary", ""),
-        "topics": agent_result.get("topics", []),
-        "questions": agent_result.get("questions", []),
+        "summary": summary,
+        "topics": topics,
+        "questions": questions,
     }

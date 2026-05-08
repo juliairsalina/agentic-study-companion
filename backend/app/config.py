@@ -13,6 +13,12 @@ class Settings:
 
     AZURE_SPEECH_KEY: str = os.getenv("AZURE_SPEECH_KEY", "")
     AZURE_SPEECH_REGION: str = os.getenv("AZURE_SPEECH_REGION", "")
-    
+
+    # Cosmos DB for NoSQL
+    COSMOS_DB_ENDPOINT: str = os.getenv("COSMOS_DB_ENDPOINT", "")
+    COSMOS_DB_KEY: str = os.getenv("COSMOS_DB_KEY", "")
+    COSMOS_DB_DATABASE: str = os.getenv("COSMOS_DB_DATABASE", "YappingStudyBuddy")
+    COSMOS_DB_CONTAINER: str = os.getenv("COSMOS_DB_CONTAINER", "sessions")
+
 
 settings = Settings()
