@@ -232,49 +232,6 @@ Transcript is evaluated by CoachAgent
 - Azure Speech
 - Azure Cosmos DB
 
-## Folder Structure
-
-```text
-study-companion/
-│
-├── backend/
-│   ├── app/
-│   │   ├── agents/
-│   │   │   ├── content_agent.py
-│   │   │   ├── coach_agent.py
-│   │   │   └── workflow_agent.py
-│   │   │
-│   │   ├── routes/
-│   │   │   ├── upload.py
-│   │   │   ├── evaluate.py
-│   │   │   ├── workflow.py
-│   │   │   └── study.py
-│   │   │
-│   │   ├── services/
-│   │   │   ├── pdf_service.py
-│   │   │   ├── speech_service.py
-│   │   │   └── storage_service.py
-│   │   │
-│   │   ├── config.py
-│   │   ├── database.py
-│   │   └── main.py
-│   │
-│   ├── requirements.txt
-│   └── .env
-│
-├── frontend/
-│   ├── index.html
-│   ├── script.js
-│   └── style.css
-│
-├── screenshot/
-│   ├── upload_page.png
-│   ├── flashcard_page.png
-│   └── review_page.png
-│
-└── README.md
-```
-
 ## Setup
 
 ### 1. Clone the repository
