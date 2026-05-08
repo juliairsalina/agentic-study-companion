@@ -28,7 +28,7 @@ def transcribe_audio_file(audio_bytes: bytes, file_suffix: str = ".wav") -> dict
             audio_config=audio_config,
         )
 
-        result = recognizer.recognize_once()
+        result = recognizer.start_continuous_recognition()
 
         if result.reason == speechsdk.ResultReason.RecognizedSpeech:
             json_result = result.properties.get(
