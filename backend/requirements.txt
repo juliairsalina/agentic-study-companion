@@ -1,11 +1,13 @@
 fastapi
 uvicorn
+gunicorn
 python-dotenv
 python-multipart
 pymupdf
-agent-framework
-agent-framework-openai
 azure-identity
 azure-cognitiveservices-speech
 azure-cosmos
-gunicorn
+
+agent-framework==1.0.0
+agent-framework-foundry==1.0.0
+agent-framework-openai==1.0.0
