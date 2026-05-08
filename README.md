@@ -365,75 +365,19 @@ Frontend URL:
 http://localhost:5500
 ```
 
-## API Routes
-
-### Upload PDF
-
-```text
-POST /upload/
-```
-
-Receives a PDF, extracts text, calls ContentAgent, saves the session to Cosmos DB, and returns generated flashcards.
-
-### Transcribe Audio
-
-```text
-POST /study/transcribe
-```
-
-Receives recorded audio and returns the Azure Speech transcript.
-
-### Evaluate Answer
-
-```text
-POST /evaluate/
-```
-
-Receives transcript and expected answer, then returns CoachAgent evaluation.
-
-### Workflow Decision
-
-```text
-POST /workflow/decide
-```
-
-Receives CoachAgent result and returns WorkflowAgent action.
-
-### Load Old Flashcards
-
-```text
-GET /study/sessions
-```
-
-Returns saved flashcard sessions from Cosmos DB.
-
-### Load One Flashcard Session
-
-```text
-GET /study/sessions/{session_id}
-```
-
-Returns one saved study session.
-
 ## Website Screenshots
 
 ### Upload Page
 
-```text
-screenshot/upload_page.png
-```
+![Upload Page](screenshot/upload_page.png)
 
 ### Flashcard Page
 
-```text
-screenshot/flashcard_page.png
-```
+![Flashcard Page](screenshot/flashcard_page.png)
 
 ### Review Page
 
-```text
-screenshot/review_page.png
-```
+![Review Page](screenshot/review_page.png)
 
 ## Current Working Features
 
