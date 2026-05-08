@@ -761,6 +761,28 @@ function LearnPage({
   );
 }
 
+function formatScore(score) {
+    if (score === undefined || score === null) return "Not scored";
+
+    const numericScore = Number(score);
+
+    if (Number.isNaN(numericScore)) return "Not scored";
+
+    if (numericScore <= 1) {
+      return `${Math.round(numericScore * 100)}%`;
+    }
+
+    return `${Math.round(numericScore)}%`;
+  }
+
+function renderList(items) {
+  if (!Array.isArray(items) || items.length === 0) {
+    return "None";
+  }
+
+  return items.join(", ");
+}
+
 function ResultsPage({
   questions,
   answers,
@@ -810,6 +832,7 @@ function ResultsPage({
             <article className="result-card glass-card" key={question.id}>
               <div className="card-top-row">
                 <span className="topic-badge">{question.topic || "General"}</span>
+
                 <span className={`decision-badge ${decision?.action || "waiting"}`}>
                   {decision?.action || "not evaluated"}
                 </span>
@@ -817,20 +840,58 @@ function ResultsPage({
 
               <h2>{question.question}</h2>
 
+              <div className="transcript-box">
+                <h3>Transcribed answer</h3>
+                <p>{answers[question.id] || "No answer submitted."}</p>
+              </div>
+
               <div className="result-grid">
-                <div>
-                  <h3>Transcribed answer</h3>
-                  <p>{answers[question.id] || "No answer submitted."}</p>
-                </div>
-
-                <div>
+                <div className="clean-result-box">
                   <h3>CoachAgent evaluation</h3>
-                  <pre>{JSON.stringify(evaluation || {}, null, 2)}</pre>
+
+                  {evaluation ? (
+                    <>
+                      <div className="score-display">
+                        {formatScore(evaluation.score)}
+                      </div>
+
+                      <div className="result-row">
+                        <strong>Matched keywords</strong>
+                        <p>{renderList(evaluation.matchedKeywords)}</p>
+                      </div>
+
+                      <div className="result-row">
+                        <strong>Missing concepts</strong>
+                        <p>{renderList(evaluation.missingConcepts)}</p>
+                      </div>
+
+                      <div className="result-row">
+                        <strong>Feedback</strong>
+                        <p>{evaluation.feedback || "No feedback available."}</p>
+                      </div>
+                    </>
+                  ) : (
+                    <p className="muted-text">This question has not been evaluated yet.</p>
+                  )}
                 </div>
 
-                <div>
+                <div className="clean-result-box">
                   <h3>WorkflowAgent decision</h3>
-                  <pre>{JSON.stringify(decision || {}, null, 2)}</pre>
+
+                  {decision ? (
+                    <>
+                      <div className={`action-display ${decision.action}`}>
+                        {decision.action}
+                      </div>
+
+                      <div className="result-row">
+                        <strong>Message to user</strong>
+                        <p>{decision.messageToUser || "No message available."}</p>
+                      </div>
+                    </>
+                  ) : (
+                    <p className="muted-text">No workflow decision yet.</p>
+                  )}
                 </div>
               </div>
             </article>

@@ -40,6 +40,7 @@ class CoachAgent:
                 "- use 'advance' if the answer is strong enough\n"
                 "- use 'hint_retry' if the answer is partially correct\n"
                 "- use 'reveal_and_move' if the answer is weak\n\n"
+                
                 "Return valid JSON only in this exact format:\n"
                 "{\n"
                 '  "questionId": "q1",\n'
