@@ -1,10 +1,11 @@
 from __future__ import annotations
 
 import json
+import os
 from typing import Any
 
 from agent_framework.foundry import FoundryChatClient
-from azure.identity.aio import AzureCliCredential
+from azure.identity.aio import AzureCliCredential, ManagedIdentityCredential
 
 from app.config import settings
 
@@ -12,9 +13,22 @@ print("FOUNDRY_PROJECT_ENDPOINT:", settings.FOUNDRY_PROJECT_ENDPOINT)
 print("FOUNDRY_MODEL:", settings.FOUNDRY_MODEL)
 
 
+def running_on_azure_app_service() -> bool:
+    """
+    Azure App Service automatically provides WEBSITE_SITE_NAME.
+    If this exists, use Managed Identity instead of Azure CLI.
+    """
+    return bool(os.getenv("WEBSITE_SITE_NAME"))
+
+
 class ContentAgent:
     def __init__(self) -> None:
-        self.credential = AzureCliCredential()
+        if running_on_azure_app_service():
+            print("ContentAgent auth: using ManagedIdentityCredential")
+            self.credential = ManagedIdentityCredential()
+        else:
+            print("ContentAgent auth: using AzureCliCredential for local development")
+            self.credential = AzureCliCredential()
 
         self.client = FoundryChatClient(
             credential=self.credential,
@@ -138,18 +152,29 @@ class ContentAgent:
             questions = []
 
         cleaned_questions = []
+
         for i, q in enumerate(questions[:10], start=1):
             if not isinstance(q, dict):
                 continue
 
-            cleaned_questions.append({
-                "id": str(q.get("id", f"q{i}")),
-                "topic": str(q.get("topic", "")),
-                "question": str(q.get("question", "")).strip(),
-                "idealAnswer": str(q.get("idealAnswer", "")).strip(),
-                "keywords": [str(k).strip() for k in q.get("keywords", []) if str(k).strip()],
-                "sourceChunkIds": [str(cid).strip() for cid in q.get("sourceChunkIds", []) if str(cid).strip()],
-            })
+            cleaned_questions.append(
+                {
+                    "id": str(q.get("id", f"q{i}")),
+                    "topic": str(q.get("topic", "")),
+                    "question": str(q.get("question", "")).strip(),
+                    "idealAnswer": str(q.get("idealAnswer", "")).strip(),
+                    "keywords": [
+                        str(k).strip()
+                        for k in q.get("keywords", [])
+                        if str(k).strip()
+                    ],
+                    "sourceChunkIds": [
+                        str(cid).strip()
+                        for cid in q.get("sourceChunkIds", [])
+                        if str(cid).strip()
+                    ],
+                }
+            )
 
         return {
             "summary": summary,
