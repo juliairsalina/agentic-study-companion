@@ -1,4 +1,4 @@
-const { useMemo, useState, useRef } = React;
+const { useMemo, useState, useRef, useEffect } = React;
 
 const BACKEND_BASE = window.APP_CONFIG?.BACKEND_BASE || "http://127.0.0.1:8000";
 
@@ -122,6 +122,43 @@ function App() {
     }
   }
 
+  async function openOldSession(sessionId) {
+    try {
+      const response = await fetch(`${BACKEND_BASE}/study/sessions/${sessionId}`);
+
+      const session = await response.json();
+
+      if (!response.ok) {
+        throw new Error(session.detail || "Failed to load old session.");
+      }
+
+      setSummary(session.summary || "");
+      setTopics(Array.isArray(session.topics) ? session.topics : []);
+      setQuestions(Array.isArray(session.questions) ? session.questions : []);
+      setCurrentIndex(0);
+      setShowKeywords(false);
+      setEvaluations(Array.isArray(session.evaluations) ? session.evaluations : []);
+      setWorkflowDecisions(
+        Array.isArray(session.workflowDecisions) ? session.workflowDecisions : []
+      );
+
+      const restoredAnswers = {};
+      if (Array.isArray(session.answers)) {
+        session.answers.forEach((answer) => {
+          restoredAnswers[answer.questionId] = answer.transcript;
+        });
+      }
+
+      setAnswers(restoredAnswers);
+      setManualTranscript("");
+      setListeningText("");
+      setPage("learn");
+    } catch (error) {
+      console.error(error);
+      alert(error.message);
+    }
+  }
+
   function resetAll() {
     setPage("upload");
     setPdfFile(null);
@@ -139,6 +176,28 @@ function App() {
     setEvaluations([]);
     setWorkflowDecisions([]);
   }
+
+  async function loadOldSessionsFromBackend() {
+    try {
+      const response = await fetch(`${BACKEND_BASE}/study/sessions`);
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.detail || "Failed to load old sessions.");
+      }
+
+      const sessions = Array.isArray(result.sessions) ? result.sessions : [];
+
+      setOldSessions(sessions);
+    } catch (error) {
+      console.warn("Could not load old sessions from backend:", error.message);
+    }
+  }
+
+  useEffect(() => {
+    loadOldSessionsFromBackend();
+  }, []);
 
   function goNextQuestion() {
     setShowKeywords(false);
@@ -361,6 +420,7 @@ function App() {
           questions={questions}
           setPage={setPage}
           oldSessions={oldSessions}
+          openOldSession={openOldSession}
           resetAll={resetAll}
         />
       )}
@@ -413,6 +473,7 @@ function UploadPage({
   questions,
   setPage,
   oldSessions,
+  openOldSession,
   resetAll
 }) {
   return (
@@ -462,7 +523,7 @@ function UploadPage({
         <section className="old-session-box">
           <div className="section-title-row">
             <h3>Old flashcards</h3>
-            <span>temporary localStorage</span>
+            <span>Azure CosmosDB Storage</span>
           </div>
 
           {oldSessions.length === 0 ? (
@@ -472,11 +533,16 @@ function UploadPage({
           ) : (
             <div className="old-session-list">
               {oldSessions.map((session) => (
-                <div className="old-session-item" key={session.id}>
+                <button
+                  type="button"
+                  className="old-session-item old-session-button"
+                  key={session.id}
+                  onClick={() => openOldSession(session.id)}
+                >
                   <strong>{session.filename}</strong>
                   <small>{session.createdAt}</small>
                   <span>{session.questions?.length || 0} cards</span>
-                </div>
+                </button>
               ))}
             </div>
           )}

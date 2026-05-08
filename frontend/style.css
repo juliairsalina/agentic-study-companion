@@ -709,3 +709,15 @@ pre {
     flex-direction: column;
   }
 }
+
+  .old-session-button {
+    width: 100%;
+    text-align: left;
+    color: inherit;
+  }
+
+  .old-session-button:hover {
+    transform: translateY(-1px);
+    background: rgba(255, 255, 255, 0.78);
+    box-shadow: 0 12px 28px rgba(80, 75, 95, 0.12);
+  }
