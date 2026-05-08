@@ -13,6 +13,6 @@ class Settings:
 
     AZURE_SPEECH_KEY: str = os.getenv("AZURE_SPEECH_KEY", "")
     AZURE_SPEECH_REGION: str = os.getenv("AZURE_SPEECH_REGION", "")
-
+    
 
 settings = Settings()

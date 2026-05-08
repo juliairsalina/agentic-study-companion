@@ -3,166 +3,35 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Yapping Flashcard</title>
+
+  <title>Yapping Study Buddy</title>
+
+  <!-- Main CSS -->
   <link rel="stylesheet" href="./style.css" />
+
+  <!-- React CDN -->
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+
+  <!-- Babel: allows JSX inside script.js -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <!-- Azure Speech SDK -->
+  <script src="https://aka.ms/csspeech/jsbrowserpackageraw"></script>
+
+  <!-- App config -->
+  <script>
+    window.APP_CONFIG = {
+      BACKEND_BASE: "http://127.0.0.1:8000"
+    };
+  </script>
 </head>
+
 <body>
-  <div class="app-shell">
-    <main class="main-layout">
-      <header class="page-header">
-        <div>
-          <h1>Yapping Flashcard</h1>
-          <p class="page-subtitle">
-            Upload a lecture PDF, study one card at a time, speak your answer, and get guided feedback.
-          </p>
-        </div>
-        <div class="header-status">
-          <span id="globalStatusPill" class="status-pill idle">Idle</span>
-        </div>
-      </header>
+  <!-- React app will be rendered here -->
+  <div id="root"></div>
 
-      <section class="panel upload-panel">
-        <div class="panel-header">
-          <h2>Upload PDF</h2>
-          <p>Start by uploading one lecture PDF and optionally add a study instruction.</p>
-        </div>
-
-        <label class="field-label" for="pdfFile">Lecture PDF</label>
-        <input type="file" id="pdfFile" accept=".pdf" />
-
-        <label class="field-label" for="instruction">Optional study instruction</label>
-        <textarea
-          id="instruction"
-          placeholder="Example: focus on definitions, comparisons, and exam-style questions."
-        ></textarea>
-
-        <div class="button-row">
-          <button id="processBtn" class="btn btn-primary">Process PDF</button>
-          <button id="resetBtn" class="btn btn-secondary">Reset</button>
-        </div>
-
-        <p id="uploadStatus" class="helper-text">No file uploaded yet.</p>
-      </section>
-
-      <section class="panel summary-panel">
-        <div class="panel-header">
-          <h2>AI Summary</h2>
-          <p>Exam-focused summary generated from the uploaded PDF.</p>
-        </div>
-        <div id="summaryBox" class="content-box summary-box">Summary will appear here.</div>
-      </section>
-
-      <section class="panel question-panel">
-        <div class="panel-header">
-          <div>
-            <h2>Question Card</h2>
-            <p>Focus on one question at a time.</p>
-          </div>
-          <div id="questionCounter" class="question-counter">0 / 0</div>
-        </div>
-
-        <div class="carousel-shell">
-          <button id="prevQuestionBtn" class="nav-btn" aria-label="Previous question">‹</button>
-
-          <article class="study-card">
-            <div class="card-meta">
-              <span id="questionTopic" class="topic-badge">No topic</span>
-              <span id="questionStep" class="step-badge">Waiting</span>
-            </div>
-
-            <div id="currentQuestion" class="question-text">
-              Upload a PDF to generate your first question.
-            </div>
-          </article>
-
-          <button id="nextQuestionBtn" class="nav-btn" aria-label="Next question">›</button>
-        </div>
-      </section>
-
-      <section class="panel session-panel">
-        <div class="panel-header">
-          <h2>Study Session</h2>
-          <p>
-            Record your spoken answer. After stopping, transcript and evaluation will run automatically.
-          </p>
-        </div>
-
-        <div class="button-row">
-          <button id="startRecordBtn" class="btn btn-primary">Start Recording</button>
-          <button id="stopRecordBtn" class="btn btn-secondary">Stop Recording</button>
-        </div>
-
-        <div class="status-stack">
-          <div>
-            <div class="mini-label">Agent step</div>
-            <div id="inlineAgentStep" class="inline-step">Waiting for your PDF.</div>
-          </div>
-          <div>
-            <div class="mini-label">Reflection timer</div>
-            <div id="reflectionTimer" class="inline-step">Not started</div>
-          </div>
-        </div>
-      </section>
-
-      <section class="panel transcript-panel">
-        <div class="panel-header">
-          <h2>Transcript</h2>
-          <p>Appears right after recording stops.</p>
-        </div>
-        <div id="transcriptBox" class="content-box">Transcript will appear here.</div>
-      </section>
-
-      <section class="panel evaluation-panel">
-        <div class="panel-header">
-          <h2>Evaluation</h2>
-          <p>Auto-generated after transcript is ready.</p>
-        </div>
-
-        <div id="statusBadge" class="status-chip neutral">Waiting for evaluation</div>
-
-        <div class="evaluation-grid">
-          <div>
-            <div class="mini-label">Score / decision</div>
-            <div id="scoreBox" class="content-box compact-box">Score and decision will appear here.</div>
-          </div>
-          <div>
-            <div class="mini-label">Feedback</div>
-            <div id="feedbackBox" class="content-box compact-box">Feedback and hint will appear here.</div>
-          </div>
-        </div>
-      </section>
-    </main>
-
-    <aside class="dev-log-panel">
-      <div class="dev-log-header">
-        <h3>Console Log</h3>
-      </div>
-      <div id="devLogBox" class="dev-log-box"></div>
-    </aside>
-  </div>
-
-  <button id="agentLauncher" class="agent-launcher" aria-label="Open agent activity">
-    <img id="agentLogo" src="logo.png" alt="Agent logo" />
-    <div class="agent-launcher-fallback">AI</div>
-  </button>
-
-  <aside id="agentBubble" class="agent-bubble" aria-live="polite">
-    <div class="agent-bubble-header">
-      <div>
-        <h3 class="agent-bubble-title">Agent Activity</h3>
-        <p class="agent-bubble-subtitle">Live execution feedback for every agent step.</p>
-      </div>
-      <button id="agentCloseBtn" class="agent-close-btn" aria-label="Close agent activity">×</button>
-    </div>
-
-    <div class="agent-current">
-      <div class="agent-current-label">Current step</div>
-      <div id="agentCurrentText" class="agent-current-text">Idle. Waiting for your PDF.</div>
-    </div>
-
-    <div id="agentLog" class="agent-log"></div>
-  </aside>
-
-  <script src="./script.js"></script>
+  <!-- Main React logic -->
+  <script type="text/babel" src="./script.js"></script>
 </body>
 </html>
