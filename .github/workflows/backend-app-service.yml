@@ -1,0 +1,51 @@
+name: Deploy FastAPI Backend to Azure App Service
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Check backend files
+        run: |
+          echo "Root files:"
+          ls
+          echo "Backend files:"
+          ls backend
+          echo "Requirements:"
+          cat backend/requirements.txt
+
+      - name: Install backend dependencies for validation
+        working-directory: backend
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          python -c "import fastapi; print('fastapi ok')"
+          python -c "import uvicorn; print('uvicorn ok')"
+          python -c "import gunicorn; print('gunicorn ok')"
+          python -c "import fitz; print('pymupdf / fitz ok')"
+
+      - name: Zip backend folder
+        run: |
+          cd backend
+          zip -r ../backend.zip .
+
+      - name: Deploy to Azure App Service
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: "yapping-study-buddy"
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+          package: backend.zip
