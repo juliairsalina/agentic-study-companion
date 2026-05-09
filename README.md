@@ -231,6 +231,8 @@ Transcript is evaluated by CoachAgent
 - Microsoft Agent Framework
 - Azure Speech
 - Azure Cosmos DB
+- Azure App Service
+- Azure Static Web App
 
 ## Setup
 
