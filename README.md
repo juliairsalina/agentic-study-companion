@@ -1,6 +1,9 @@
 # Yapping Study Buddy
-
 An agentic AI active-recall study companion that turns lecture PDFs into speaking-based flashcards.
+
+## Website Preview
+
+Live demo: [View Website](https://yellow-moss-0a08bda1e.7.azurestaticapps.net/)
 
 ## Overview
 
@@ -14,17 +17,6 @@ Traditional flashcards are useful, but they have three main problems:
 
 This project uses the current Gen Z habit of “yapping” as a learning method. Instead of only reading flashcards, users explain their answer out loud. The system transcribes the spoken answer, evaluates it, and guides the next study step.
 
-The main idea is:
-
-```text
-PDF upload
-+ automatic flashcard generation
-+ spoken answer practice
-+ AI evaluation
-+ workflow decision-making
-= active recall learning flashcards
-```
-
 ## Main Features
 
 - Upload lecture PDF.
@@ -37,7 +29,7 @@ PDF upload
 - Evaluate answers using CoachAgent.
 - Decide next action using WorkflowAgent.
 - Save old flashcards using Azure Cosmos DB.
-- Retry only cards marked as hint_retry.
+- Retry only cards marked as hint_retry by Workflow Agent.
 
 ## Pipeline Flow
 
@@ -343,6 +335,7 @@ http://localhost:5500
 - PDF upload
 - PDF text extraction
 - ContentAgent question generation
+- Multilingual question generation
 - Flashcard learning page
 - Azure Speech transcription
 - CoachAgent evaluation
@@ -350,6 +343,7 @@ http://localhost:5500
 - Cosmos DB session saving
 - Old flashcard access
 - Retry session for hint_retry cards
+- Azure App Cloud deployment
 
 ## Future Improvements
 
@@ -358,4 +352,3 @@ http://localhost:5500
 - Add Azure AI Search for retrieval-augmented generation.
 - Add multi-language speech recognition.
 - Add study streaks and learning analytics.
-- Improve cloud deployment using Azure App Service.
