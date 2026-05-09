@@ -69,25 +69,8 @@ Next session can focus only on hint_retry cards
 ```
 
 ## Architecture
+![Architecture](screenshot/architecture.png)
 
-```text
-Frontend
-HTML / CSS / JavaScript / React
-        ↓
-FastAPI Backend
-        ↓
-Agents and Azure Services
-        ↓
-Database / Memory Layer
-```
-
-### Architecture Description
-
-The user uploads a PDF from the frontend. The backend saves the uploaded file and extracts text from the PDF. The extracted text is sent to ContentAgent, which generates an exam-focused summary, important topics, and flashcard questions.
-
-The generated flashcard session is saved in Azure Cosmos DB. Cosmos DB works as the memory layer of the system. It stores old flashcards, summaries, questions, answers, evaluations, and workflow decisions.
-
-During the study session, the user answers each question by speaking. Azure Speech transcribes the spoken answer into text. CoachAgent evaluates the transcript by comparing it with the ideal answer and required keywords. WorkflowAgent then decides whether the user should advance, retry with a hint, or reveal the answer and move on.
 
 ## Agents
 
