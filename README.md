@@ -3,7 +3,9 @@ An agentic AI active-recall study companion that turns lecture PDFs into speakin
 
 ## Website Preview
 
-Live demo: [View Website](https://yellow-moss-0a08bda1e.7.azurestaticapps.net/)
+[![https://yellow-moss-0a08bda1e.7.azurestaticapps.net/](screenshots/upload_page.png)](https://yellow-moss-0a08bda1e.7.azurestaticapps.net/)
+
+Click the image to open the interactive website.
 
 ## Overview
 
