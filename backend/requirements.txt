@@ -7,8 +7,6 @@ pymupdf
 azure-identity
 azure-cognitiveservices-speech
 azure-cosmos
-openai
-
-agent-framework==1.0.0
-agent-framework-foundry==1.0.0
-agent-framework-openai==1.0.0
+agent-framework
+agent-framework-openai
+agent-framework-foundry
