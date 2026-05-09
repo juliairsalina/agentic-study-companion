@@ -2,10 +2,9 @@
 An agentic AI active-recall study companion that turns lecture PDFs into speaking-based flashcards.
 
 ## Website Preview
+![Upload Page Preview](screenshot/upload_page.png)
 
-[![https://yellow-moss-0a08bda1e.7.azurestaticapps.net/](screenshots/upload_page.png)](https://yellow-moss-0a08bda1e.7.azurestaticapps.net/)
-
-Click the image to open the interactive website.
+Live demo: [View Website](https://yellow-moss-0a08bda1e.7.azurestaticapps.net/)
 
 ## Overview
 
