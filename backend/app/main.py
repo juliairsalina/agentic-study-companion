@@ -20,7 +20,7 @@ app.add_middleware(
         allow_origins=[
         "http://localhost:5500",
         "http://127.0.0.1:5500",
-        "hhttps://yellow-moss-0a08bda1e.7.azurestaticapps.net",
+        "https://yellow-moss-0a08bda1e.7.azurestaticapps.net",
     ],
     allow_credentials=True,
     allow_methods=["*"],
