@@ -8,7 +8,7 @@ Yapping Study Buddy is an online flashcard tool, but instead of only reading and
 
 ![Upload Page Preview](screenshot/upload_page.png)
 
-Live demo: [View Website](https://yellow-moss-0a08bda1e.7.azurestaticapps.net/)
+Website Link: [https://yellow-moss-0a08bda1e.7.azurestaticapps.net/](https://yellow-moss-0a08bda1e.7.azurestaticapps.net/)
 
 ## Table of Contents
 
@@ -317,6 +317,22 @@ Before running the project, make sure you have:
 
 ## Installation
 
+This project can run in two modes:
+
+**Local development mode**
+- Frontend: `http://localhost:5500`
+- Backend: `http://127.0.0.1:8000`
+- The backend still connects to Azure Cosmos DB, Azure Speech, Azure OpenAI, and Microsoft Foundry.
+
+**Cloud deployment mode**
+- Frontend: Azure Static Web Apps
+- Backend: Azure App Service
+- The deployed frontend is hosted on Azure Static Web Apps:
+
+```text
+https://yellow-moss-0a08bda1e.7.azurestaticapps.net
+```
+
 ### 1. Clone the repository
 
 ```bash
@@ -326,7 +342,14 @@ cd agentic-study-companion
 
 ### 2. Create backend environment file
 
-Create a `.env` file inside the `backend/` folder and configure the following variables:
+Create a `.env` file inside the `backend/` folder:
+
+```bash
+cd backend
+touch .env
+```
+
+Configure the following variables:
 
 | Environment Variable | Example Value | Description |
 |---|---|---|
@@ -334,13 +357,15 @@ Create a `.env` file inside the `backend/` folder and configure the following va
 | `FOUNDRY_MODEL` | `gpt-4.1-mini` | Model deployment used by ContentAgent, CoachAgent, and WorkflowAgent. |
 | `AZURE_OPENAI_API_KEY` | `*****` | API key for Azure OpenAI access. Do not expose publicly. |
 | `AZURE_SPEECH_KEY` | `*****` | Azure Speech resource key for speech-to-text transcription. |
-| `AZURE_SPEECH_REGION` | `your-location` | Azure region for the Speech resource, for example `koreacentral`. |
+| `AZURE_SPEECH_REGION` | `koreacentral` | Azure region for the Speech resource. |
 | `APP_HOST` | `0.0.0.0` | Host address for running the backend server. |
 | `APP_PORT` | `8000` | Port number for the FastAPI backend. |
 | `COSMOS_DB_ENDPOINT` | `https://database-endpoint.documents.azure.com` | Azure Cosmos DB endpoint for storing study sessions. |
 | `COSMOS_DB_KEY` | `*****` | Azure Cosmos DB access key. Do not expose publicly. |
 | `COSMOS_DB_DATABASE` | `YappingStudyBuddy` | Cosmos DB database name. |
 | `COSMOS_DB_CONTAINER` | `sessions` | Cosmos DB container name for storing sessions. |
+
+See ![.env.example](.env.example)
 
 ### 3. Install backend dependencies
 
@@ -352,7 +377,36 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-### 4. Run backend
+### 4. Configure frontend backend URL
+
+Before running locally or deploying, update the backend URL in:
+
+```text
+frontend/index.html
+```
+
+For cloud deployment, I use the Azure App Service backend URL:
+
+```html
+<script>
+  window.APP_CONFIG = {
+    BACKEND_BASE: "https://yapping-study-buddy.azurewebsites.net"
+  };
+</script>
+```
+
+For local development, use:
+
+```html
+<script>
+  window.APP_CONFIG = {
+    BACKEND_BASE: "http://127.0.0.1:8000"
+  };
+</script>
+```
+
+
+### 5. Run backend locally
 
 Inside the `backend/` folder:
 
@@ -372,9 +426,9 @@ API documentation:
 http://127.0.0.1:8000/docs
 ```
 
-### 5. Run frontend
+### 6. Run frontend locally
 
-Open another terminal:
+Open another terminal from the project root:
 
 ```bash
 cd frontend
@@ -385,6 +439,43 @@ Frontend URL:
 
 ```text
 http://localhost:5500
+```
+
+### 7. Verify local connection
+
+Open the frontend:
+
+```text
+http://localhost:5500
+```
+
+Then open the browser console and run:
+
+```js
+window.APP_CONFIG.BACKEND_BASE
+```
+
+For local development, it should return:
+
+```text
+http://127.0.0.1:8000
+```
+
+Test the backend connection:
+
+```js
+fetch(window.APP_CONFIG.BACKEND_BASE + "/")
+  .then(r => r.json())
+  .then(console.log)
+  .catch(console.error)
+```
+
+Expected result:
+
+```json
+{
+  "message": "Study Companion API is running"
+}
 ```
 
 ## Screenshots
