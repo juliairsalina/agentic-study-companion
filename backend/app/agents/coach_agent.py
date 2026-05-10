@@ -4,14 +4,20 @@ import json
 from typing import Any
 
 from agent_framework.foundry import FoundryChatClient
-from azure.identity.aio import AzureCliCredential
+import os
+from azure.identity.aio import AzureCliCredential, ManagedIdentityCredential
 
 from app.config import settings
 
 
 class CoachAgent:
     def __init__(self) -> None:
-        self.credential = AzureCliCredential()
+        if os.getenv("WEBSITE_SITE_NAME"):
+            print("CoachAgent auth: using ManagedIdentityCredential")
+            self.credential = ManagedIdentityCredential()
+        else:
+            print("CoachAgent auth: using AzureCliCredential for local development")
+            self.credential = AzureCliCredential()
 
         self.client = FoundryChatClient(
             credential=self.credential,

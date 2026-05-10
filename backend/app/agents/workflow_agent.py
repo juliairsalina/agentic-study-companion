@@ -4,7 +4,9 @@ import json
 from typing import Any
 
 from agent_framework.foundry import FoundryChatClient
-from azure.identity.aio import AzureCliCredential
+
+import os
+from azure.identity.aio import AzureCliCredential, ManagedIdentityCredential
 
 from app.config import settings
 
