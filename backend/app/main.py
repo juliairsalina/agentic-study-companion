@@ -42,3 +42,16 @@ app.include_router(upload_router)
 app.include_router(evaluate_router)
 app.include_router(workflow_router)
 app.include_router(study_router)
+
+@app.get("/debug/env")
+def debug_env():
+    return {
+        "has_cosmos_endpoint": bool(settings.COSMOS_DB_ENDPOINT),
+        "has_cosmos_key": bool(settings.COSMOS_DB_KEY),
+        "cosmos_database": settings.COSMOS_DB_DATABASE,
+        "cosmos_container": settings.COSMOS_DB_CONTAINER,
+        "has_speech_key": bool(settings.AZURE_SPEECH_KEY),
+        "speech_region": settings.AZURE_SPEECH_REGION,
+        "foundry_model": settings.FOUNDRY_MODEL,
+        "has_foundry_endpoint": bool(settings.FOUNDRY_PROJECT_ENDPOINT),
+    }
