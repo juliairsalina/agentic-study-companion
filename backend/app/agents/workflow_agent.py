@@ -13,7 +13,12 @@ from app.config import settings
 
 class WorkflowAgent:
     def __init__(self) -> None:
-        self.credential = AzureCliCredential()
+        if os.getenv("WEBSITE_SITE_NAME"):
+            print("WorkflowAgent auth: using ManagedIdentityCredential")
+            self.credential = ManagedIdentityCredential()
+        else:
+            print("WorkflowAgent auth: using AzureCliCredential for local development")
+            self.credential = AzureCliCredential()
 
         self.client = FoundryChatClient(
             credential=self.credential,
