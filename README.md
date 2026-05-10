@@ -194,16 +194,6 @@ This project leverages Microsoft services across the full learning loop.
 | **Azure Static Web App** | Hosts the frontend. |
 | **Azure App Service** | Hosts the FastAPI backend. |
 
-### Why Microsoft services are important
-
-Each Microsoft service maps directly to one part of the study workflow:
-
-- **Azure OpenAI / Foundry** provides reasoning and language understanding.
-- **Microsoft Agent Framework** separates generation, evaluation, and decision-making into specialized agents.
-- **Azure Speech** enables spoken active recall.
-- **Azure Cosmos DB** stores persistent learning memory.
-- **Azure deployment services** make the application accessible online.
-
 ## Pipeline Flow
 
 ```text
@@ -243,38 +233,34 @@ Next session can focus on weak or hint_retry cards
 ## Sample Workflow
 
 ### User action
-
+```
 The user uploads a lecture PDF and starts a flashcard session.
+```
 
 ### Application workflow
 
-**1. Extract lecture text**
-
+```
+1. Extract lecture text
 The backend extracts readable text from the PDF using PyMuPDF.
 
-**2. Generate flashcards**
-
+2. Generate flashcards
 ContentAgent uses Azure OpenAI through Microsoft Foundry to generate summary, topics, questions, ideal answers, keywords, and source chunk IDs.
 
-**3. Record spoken answer**
-
+3. Record spoken answer
 The user answers the question by speaking through the frontend.
 
-**4. Transcribe speech**
-
+4. Transcribe speech
 Azure Speech converts the user's audio into text.
 
-**5. Evaluate answer**
-
+5. Evaluate answer
 CoachAgent evaluates semantic correctness, concept coverage, matched keywords, missing concepts, and answer quality.
 
-**6. Decide next action**
-
+6. Decide next action
 WorkflowAgent uses the score, recommendation, retry count, weak topics, and session history to decide whether the user should advance, retry with a hint, or reveal the answer.
 
-**7. Store memory**
-
+7. Store memory
 Azure Cosmos DB stores the session data so the system can later support old flashcards, weak-topic review, and personalized retry sessions.
+```
 
 ## Tech Stack
 
