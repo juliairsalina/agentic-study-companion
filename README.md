@@ -9,6 +9,7 @@ Yapping Study Buddy is an online flashcard tool, but instead of only reading and
 ![Upload Page Preview](screenshot/upload_page.png)
 
 Website Link: [https://yellow-moss-0a08bda1e.7.azurestaticapps.net/](https://yellow-moss-0a08bda1e.7.azurestaticapps.net/)
+Youtube Link: https://youtu.be/TIkZ9cmQxY4 
 
 ## Table of Contents
 
